@@ -1,0 +1,1 @@
+/home/bacen/.config/omarchy/current/theme/neovim.lua
