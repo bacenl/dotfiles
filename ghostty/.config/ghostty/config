@@ -17,11 +17,12 @@ background-opacity = 0.65
 
 # Cursor styling
 cursor-style = "block"
-cursor-style-blink = false
+cursor-style-blink = true
 
 # Cursor styling + SSH session terminfo
 # (all shell integration options must be passed together)
 shell-integration-features = no-cursor,ssh-env
+command = "/usr/bin/fish"
 
 # Keyboard bindings
 keybind = shift+insert=paste_from_clipboard
@@ -30,6 +31,40 @@ keybind = super+control+shift+alt+arrow_down=resize_split:down,100
 keybind = super+control+shift+alt+arrow_up=resize_split:up,100
 keybind = super+control+shift+alt+arrow_left=resize_split:left,100
 keybind = super+control+shift+alt+arrow_right=resize_split:right,100
+
+keybind = ctrl+a>n=new_split:right
+keybind = ctrl+a>m=new_split:down
+keybind = ctrl+a>w=close_surface
+
+# Go to split
+keybind = ctrl+a>h=goto_split:left
+keybind = ctrl+a>j=goto_split:down
+keybind = ctrl+a>k=goto_split:up
+keybind = ctrl+a>l=goto_split:right
+
+# Open config file
+keybind = ctrl+a>e=open_config
+
+# Create tab
+keybind = ctrl+t=new_tab
+keybind = ctrl+h=previous_tab
+keybind = ctrl+l=next_tab
+keybind = ctrl+w=close_tab
+
+# Go to specified tab
+keybind = ctrl+1=goto_tab:1
+keybind = ctrl+2=goto_tab:2
+keybind = ctrl+3=goto_tab:3
+keybind = ctrl+4=goto_tab:4
+keybind = ctrl+5=goto_tab:5
+keybind = ctrl+6=goto_tab:6
+keybind = ctrl+7=goto_tab:7
+keybind = ctrl+8=goto_tab:8
+keybind = ctrl+9=goto_tab:9
+keybind = ctrl+0=goto_tab:10
+
+# Double ctrl+a sends literal Ctrl-A to the running app if needed
+keybind = ctrl+a>ctrl+a=text:\x01
 
 # Slowdown mouse scrolling
 mouse-scroll-multiplier = 1.25
