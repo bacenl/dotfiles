@@ -44,6 +44,11 @@
   margin-right: 16px;
 }
 
+#language {
+  margin-right: 15px;
+  font-size: 11px;
+}
+
 #bluetooth {
   margin-right: 17px;
 }
