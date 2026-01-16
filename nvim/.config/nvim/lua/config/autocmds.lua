@@ -16,3 +16,24 @@ vim.api.nvim_create_autocmd('BufEnter', {
     end
   end,
 })
+
+-- vim.fn.serverstart('/tmp/godothost')
+
+-- For Godot using Neovim
+-- Must use `nvim .` or `nvim PROJECT_PATH`
+vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+        -- If opened with directory, cd to it
+        local arg = vim.fn.argv(0)
+        if arg ~= "" and vim.fn.isdirectory(arg) == 1 then
+            vim.cmd.cd(vim.fn.fnamemodify(arg, ':p'))
+        end
+
+        local gdproject = io.open(vim.fn.getcwd()..'/project.godot', 'r')
+        if gdproject then
+            io.close(gdproject)
+            vim.fn.serverstart('/tmp/godothost')
+        end
+    end,
+})
+

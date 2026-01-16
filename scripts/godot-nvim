@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SOCKET="/tmp/godothost"
+
+nvim --server "$SOCKET" --remote-send "<C-\><C-N>:n $1<CR>$2G$3|"
+
+NVIM_PID=$(lsof -t "$SOCKET" 2>/dev/null | head -1)
+
+if [ -n "$NVIM_PID" ]; then
+    # hardcode switch to workspace 3 because that's where u supposed to work man
+    hyprctl dispatch workspace 3
+fi

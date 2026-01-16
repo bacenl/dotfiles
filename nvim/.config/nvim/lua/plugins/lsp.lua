@@ -4,6 +4,9 @@ return {
   {
     "neovim/nvim-lspconfig",
     config = function()
+      -- GDScript LSP
+      vim.lsp.enable('gdscript')
+
       -- Go LSP
       vim.lsp.enable('gopls')
 
