@@ -12,7 +12,7 @@
   font-size: 20px;
 }
 
-#tray,
+#group-tray-expander,
 #bluetooth,
 #network,
 #pulseaudio,
@@ -56,11 +56,12 @@
 }
 
 #bluetooth {
-  margin-right: 15px;
+  margin-right: 16px;
+  font-size: 23px;
 }
 
 #network {
-  margin-right: 8px;
+  margin-right: 3px;
 }
 
 #custom-expand-icon {
