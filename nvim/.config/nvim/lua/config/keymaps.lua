@@ -1,3 +1,11 @@
 -- Keymaps are automatically loaded on the VeryLazy event
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
+--
+-- vim.keymap.set('i', '<C-f>', '<C-y>', { noremap = true, silent = true, desc = 'Accept completion' })
+-- vim.keymap.set('i', '<C-j>', '<C-n>', { noremap = true, silent = true, desc = 'Next completion' })
+-- vim.keymap.set('i', '<C-k>', '<C-p>', { noremap = true, silent = true, desc = 'Previous completion' })
+
+-- To swap <C-f> to complete (from blink.cmp) with the buffer creation from neovim
+vim.keymap.set('c', '<C-y>', '<C-f>', { noremap = true, silent = true, desc = 'Open command-line window' })
+
