@@ -1,16 +1,8 @@
 return {
-  "epwalsh/obsidian.nvim",
+  "obsidian-nvim/obsidian.nvim",
   version = "*", -- recommended, use latest release instead of latest commit
-  lazy = true,
+  lazy = false,
   ft = "markdown",
-  -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
-  -- event = {
-  --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-  --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
-  --   -- refer to `:h file-pattern` for more examples
-  --   "BufReadPre path/to/my-vault/*.md",
-  --   "BufNewFile path/to/my-vault/*.md",
-  -- },
   dependencies = {
     -- Required.
     "nvim-lua/plenary.nvim",
@@ -18,27 +10,35 @@ return {
     -- see below for full list of optional dependencies 👇
   },
   opts = {
+    legacy_commands = false, -- this will be removed in the next major release
     ui = { enable = false },
+    completion = { blink = true },
+    disable_frontmatter = true,
+    mappings = {}, -- disable default mappings
     workspaces = {
       {
-        name = "academic",
-        path = "~/Documents/!academic",
+        name = "Academic",
+        path = "~/Documents/01_academic/",
       },
       {
-        name = "programming",
-        path = "~/Documents/!programming",
+        name = "Programming",
+        path = "~/Documents/02_programming/",
       },
       {
-        name = "life",
-        path = "~/Documents/!life",
+        name = "Projects",
+        path = "~/Documents/03_projects/",
       },
       {
-        name = "projects",
-        path = "~/Documents/!projects",
+        name = "Life",
+        path = "~/Documents/04_life/",
       },
       {
-        name = "other_topics",
-        path = "~/Documents/!other_topics",
+        name = "Misc",
+        path = "~/Documents/05_misc/",
+      },
+      {
+        name = "Quick Notes",
+        path = "~/Documents/07_quick_notes/",
       },
     },
 

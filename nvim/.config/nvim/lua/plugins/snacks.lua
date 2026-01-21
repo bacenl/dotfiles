@@ -4,6 +4,24 @@ return {
   lazy = false,
   ---@type snacks.Config
   opts = {
+    image = {
+      enabled = true,
+      doc = {
+        inline = true,
+        float = true,
+        max_width = 50,
+        max_height = 30,
+        -- Apparently, all the images that you preview in neovim are converted
+        -- to .png and they're cached, original image remains the same, but
+        -- the preview you see is a png converted version of that image
+        --
+        -- Where are the cached images stored?
+        -- This path is found in the docs
+        -- :lua print(vim.fn.stdpath("cache") .. "/snacks/image")
+        -- For me returns `~/.cache/neobean/snacks/image`
+        -- Go 1 dir above and check `sudo du -sh ./* | sort -hr | head -n 5`
+      },
+    },
     terminal = {
       shell = "/usr/bin/fish",
       win = {

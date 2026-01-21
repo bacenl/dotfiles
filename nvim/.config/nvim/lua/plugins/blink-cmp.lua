@@ -35,7 +35,7 @@ return {
     }
 
     opts.term = {
-      enabled = true,
+      enabled = false,
     }
 
     opts.completion = {
