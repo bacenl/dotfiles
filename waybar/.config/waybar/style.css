@@ -17,10 +17,10 @@
 #network,
 #pulseaudio,
 #cpu,
+#power-profiles-daemon,
 #battery {
   font-size: 32px;
 }
-
 
 .modules-left {
   margin-left: 8px;
@@ -42,6 +42,7 @@
 }
 
 #cpu,
+#power-profiles-daemon,
 #battery,
 #pulseaudio,
 #custom-omarchy,
@@ -66,6 +67,14 @@
 
 #custom-expand-icon {
   margin-right: 18px;
+}
+
+#power-profiles-daemon {
+
+}
+
+#battery {
+  font-size: 23px;
 }
 
 tooltip {

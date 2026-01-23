@@ -12,6 +12,7 @@
     "network",
     "pulseaudio",
     "cpu",
+    "power-profiles-daemon",
     "battery"
   ],
   "hyprland/workspaces": {
@@ -78,6 +79,15 @@
     "interval": 3,
     "spacing": 1,
     "on-click": "omarchy-launch-wifi"
+  },
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power mode: {profile}",
+    "format-icons": {
+      "performance": "󰓅",
+      "balanced": "󰾅",
+      "power-saver": "󰾆"
+    }
   },
   "battery": {
     "format": "{capacity}% {icon}",
