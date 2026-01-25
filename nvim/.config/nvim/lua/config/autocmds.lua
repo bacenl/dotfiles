@@ -37,3 +37,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
     end,
 })
 
+vim.cmd([[
+  cabbrev qwa wa<Bar>qa
+  cabbrev wqa wa<Bar>qa
+]])
