@@ -28,7 +28,21 @@ return {
         position = "float",
         border = "rounded",
       },
-    }
+    },
+		picker = {
+			hidden = true,
+			ignored = true,
+			sources = {
+				files = {
+					hidden = true,
+					ignored = true,
+				},
+				buffers = {
+					hidden = true,
+					ignored = true,
+				},
+			},
+		},
   },
   config = function(_, opts)
     require("snacks").setup(opts)
