@@ -25,3 +25,9 @@ local diary_path = string.format("~/Documents/07_quick_notes/programming_diary/%
 vim.keymap.set('n', '<leader>tp', function()
   vim.cmd('edit ' .. diary_path)
 end, { desc = 'Open Programming Diary' })
+
+local chinese_path = '~/Documents/03_projects/Chinese/io/input.txt'
+
+vim.keymap.set('n', '<leader>tc', function()
+  vim.cmd('edit ' .. chinese_path)
+end, { desc = 'Open Chinese' })
