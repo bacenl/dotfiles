@@ -1,0 +1,20 @@
+[icon]
+prepend_conds = [
+	{ if = "dir", text = "", fg = "#9ebecc" },
+]
+prepend_dirs  = [ 
+  { name = ".config", text = "", fg = "#9ebecc" }, 
+  { name = ".git", text = "", fg = "#9ebecc" }, 
+  { name = ".github", text = "", fg = "#9ebecc" }, 
+  { name = ".npm", text = "", fg = "#9ebecc" }, 
+  { name = "Desktop", text = "", fg = "#9ebecc" }, 
+  { name = "Development", text = "", fg = "#9ebecc" }, 
+  { name = "Documents", text = "", fg = "#9ebecc" }, 
+  { name = "Downloads", text = "", fg = "#9ebecc" }, 
+  { name = "Library", text = "", fg = "#9ebecc" }, 
+  { name = "Movies", text = "", fg = "#9ebecc" }, 
+  { name = "Music", text = "", fg = "#9ebecc" }, 
+  { name = "Pictures", text = "", fg = "#9ebecc" }, 
+  { name = "Public", text = "", fg = "#9ebecc" }, 
+  { name = "Videos", text = "", fg = "#9ebecc" }, 
+] 
