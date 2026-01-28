@@ -27,7 +27,7 @@ vim.o.splitbelow = true
 
 -- Enable break indent
 vim.o.breakindent = true
-vim.opt.relativenumber = false
+vim.opt.relativenumber = true
 
 vim.o.guicursor = table.concat({
   "n-v-c:block-Cursor/lCursor-blinkwait1000-blinkon100-blinkoff100",
