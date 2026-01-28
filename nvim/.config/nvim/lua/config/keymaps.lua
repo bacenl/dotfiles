@@ -31,3 +31,10 @@ local chinese_path = '~/Documents/03_projects/Chinese/io/input.txt'
 vim.keymap.set('n', '<leader>tc', function()
   vim.cmd('edit ' .. chinese_path)
 end, { desc = 'Open Chinese' })
+
+local current_path = '~/Documents/01_academic/!Current/!Current.md'
+
+vim.keymap.set('n', '<leader>ta', function()
+  vim.cmd('edit ' .. current_path)
+end, { desc = 'Open Current' })
+
