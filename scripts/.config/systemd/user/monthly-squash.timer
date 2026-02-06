@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Monthly Markdown Header Squasher on the 1st of each month
+Requires=monthly-squash.service
+
+[Timer]
+# Run on the 1st of every month at 00:05 (5 minutes past midnight)
+OnCalendar=*-*-01 00:05:00
+
+# If the system was off when the timer should have run, run it when the system starts
+Persistent=true
+
+[Install]
+WantedBy=timers.target

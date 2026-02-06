@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Append
+After=network.target
+
+[Service]
+Type=oneshot
+User=%u
+ExecStart=/usr/bin/fish /home/%u/.local/bin/daily_append.fish
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Daily Append Every Day
+Requires=daily-append.service
+
+[Timer]
+# Run on 00:05 daily (5 minutes past midnight)
+OnCalendar=*-*-* 00:05:00
+
+# If the system was off when the timer should have run, run it when the system starts
+Persistent=true
+
+[Install]
+WantedBy=timers.target
