@@ -41,3 +41,5 @@ vim.cmd([[
   cabbrev qwa wa<Bar>qa
   cabbrev wqa wa<Bar>qa
 ]])
+
+vim.keymap.set("n", "gd", vim.lsp.buf.definition, { silent = true })
