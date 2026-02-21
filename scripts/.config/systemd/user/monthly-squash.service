@@ -6,6 +6,3 @@ After=network.target
 Type=oneshot
 User=%u
 ExecStart=/usr/bin/fish /home/%u/.local/bin/monthly_squash.fish
-
-[Install]
-WantedBy=multi-user.target

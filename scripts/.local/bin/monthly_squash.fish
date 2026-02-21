@@ -8,7 +8,7 @@ set prev_month (date -d "last month" +%b | string lower)
 set current_year (date +%Y)
 
 # Set the directory where your markdown files are stored
-set md_dir "$HOME/Documents/obsidian/07_quick_notes/programming_diary/"$current_year
+set md_dir "$HOME/Documents/obsidian/03_quick_notes/programming_diary/"$current_year
 
 # Change to the markdown directory
 cd $md_dir
