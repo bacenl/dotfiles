@@ -11,7 +11,7 @@ vim.keymap.set('c', '<C-y>', '<C-f>', { noremap = true, silent = true, desc = 'O
 
 
 -- Keymap to open TODO
-local todo_path = '~/Documents/obsidian/07_quick_notes/todo.md'
+local todo_path = '~/Documents/obsidian/03_quick_notes/todo.md'
 vim.keymap.set('n', '<leader>td', function()
   vim.cmd('edit ' .. todo_path)
 end, { desc = 'Open Todo' })
@@ -19,22 +19,22 @@ end, { desc = 'Open Todo' })
 -- Keymap to open programming diary
 local year = tonumber(os.date("%Y"))
 local month_abbr = os.date("%b"):lower()
-local diary_path = string.format("~/Documents/obsidian/07_quick_notes/programming_diary/%d/%s.md", year, month_abbr)
+local diary_path = string.format("~/Documents/obsidian/03_quick_notes/programming_diary/%d/%s.md", year, month_abbr)
 vim.keymap.set('n', '<leader>tp', function()
   vim.cmd('edit ' .. diary_path)
 end, { desc = 'Open Programming Diary' })
 
-local chinese_path = '~/Documents/obsidian/03_projects/chinese/io/input.txt'
+local chinese_path = '~/Documents/projects/chinese_md_to_anki/io/input.txt'
 vim.keymap.set('n', '<leader>tm', function()
   vim.cmd('edit ' .. chinese_path)
 end, { desc = 'Open Chinese' })
 
-local current_path = '~/Documents/obsidian/01_academic/!current/!current.md'
+local current_path = '~/Documents/obsidian/01_academic/01_current/!current.md'
 vim.keymap.set('n', '<leader>tc', function()
   vim.cmd('edit ' .. current_path)
 end, { desc = 'Open Current' })
 
-local anki_path = '~/Documents/obsidian/07_quick_notes/anki.md'
+local anki_path = '~/Documents/obsidian/03_quick_notes/anki.md'
 vim.keymap.set('n', '<leader>ta', function()
   vim.cmd('edit ' .. anki_path)
 end, { desc = 'Open Anki' })
