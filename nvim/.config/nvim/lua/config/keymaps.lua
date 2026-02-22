@@ -9,6 +9,7 @@
 -- To swap <C-f> to complete (from blink.cmp) with the buffer creation from neovim
 vim.keymap.set('c', '<C-y>', '<C-f>', { noremap = true, silent = true, desc = 'Open command-line window' })
 
+vim.keymap.set('n', '<C-w>f', ':Neotree focus<CR>', { noremap = true, silent = true })
 
 -- Keymap to open TODO
 local todo_path = '~/Documents/obsidian/03_quick_notes/todo.md'
