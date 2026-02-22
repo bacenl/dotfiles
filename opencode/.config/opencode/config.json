@@ -1,0 +1,68 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "*": "ask",
+    "bash": {
+      "*": "ask",
+      "git status *": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git add *": "allow",
+      "git commit *": "ask",
+      "git push *": "ask",
+      "git pull *": "ask",
+      "git checkout *": "ask",
+      "grep *": "allow",
+      "ls *": "allow",
+      "cat *": "allow",
+      "rm *": "deny",
+      "rm -rf *": "deny",
+      "sudo *": "deny",
+      "curl *": "ask",
+      "wget *": "ask",
+      "chmod *": "ask",
+      "chown *": "deny",
+      "ssh *": "deny",
+      "scp *": "deny"
+    },
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      "*.pem": "deny",
+      "*.key": "deny",
+      "~/.ssh/*": "deny",
+      "~/.config/tmux/*": "deny",
+      "~/.gnupg/*": "deny",
+      "~/Documents/obsidian/04_life/*": "deny",
+      "~/Documents/obsidian/06_official_documents/*": "deny"
+    },
+    "edit": {
+      "*": "ask",
+      "~/Documents/obsidian/04_life/*": "deny",
+      "~/Documents/obsidian/06_official_documents/*": "deny",
+      "~/.ssh/*": "deny",
+      "*.env": "deny",
+      "*.pem": "deny",
+      "*.key": "deny"
+    },
+    "glob": "ask",
+    "grep": "allow",
+    "list": {
+      "*": "allow",
+      "~/Documents/obsidian/04_life/*": "deny",
+      "~/Documents/obsidian/06_official_documents/*": "deny",
+      "~/.ssh/*": "deny"
+    },
+    "webfetch": "ask",
+    "websearch": "ask",
+    "task": "ask",
+    "external_directory": {
+      "*": "deny",
+      "~/Documents/obsidian/04_life/*": "deny",
+      "~/Documents/obsidian/06_official_documents/*": "deny"
+    },
+    "doom_loop": "deny"
+  }
+}
