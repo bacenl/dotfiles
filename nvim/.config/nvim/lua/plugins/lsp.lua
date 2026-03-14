@@ -19,6 +19,9 @@ return {
       -- Rust LSP
       vim.lsp.enable('rust_analyzer')
 
+      -- Astro LSP
+      vim.lsp.enable('astro')
+
       -- Lua LSP
       vim.lsp.config('lua_ls', {
         on_init = function(client)
