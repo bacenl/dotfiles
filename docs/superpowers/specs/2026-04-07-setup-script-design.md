@@ -67,7 +67,18 @@ Full developer setup for a personal laptop.
 
 ## Dotfiles Repo Bootstrapping
 
-`setup.sh` clones `https://github.com/bacenl/dotfiles` to `~/dotfiles` if not already present. If the directory exists, it skips cloning. The `--dotfiles-dir` flag overrides the target path.
+`setup.sh` must bootstrap its own dependencies before doing anything else. On a completely empty container (bash only), the following must be installed via the native OS package manager before cloning or stowing: `git`, `curl` (or `wget`), `stow`. On macOS, also `brew` (installed via the official install script if missing).
+
+Only after bootstrapping does `setup.sh` clone `https://github.com/bacenl/dotfiles` to `~/dotfiles` if not already present. If the directory exists, cloning is skipped. The `--dotfiles-dir` flag overrides the target path.
+
+---
+
+## TMux Plugin Installation
+
+Both profiles automatically install tmux plugins headlessly after stowing the tmux config:
+
+1. Clone TPM to `~/.config/tmux/plugins/tpm` (skipped if already present)
+2. Run `~/.config/tmux/plugins/tpm/bin/install_plugins` (no running tmux server required)
 
 ---
 
