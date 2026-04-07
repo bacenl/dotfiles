@@ -18,6 +18,7 @@ dotfiles/
   scripts/
     install/
       pkgs.sh                     ← OS detection + install_pkg() + package name maps
+      nvim.sh                     ← nvim version-aware installer
     profile/
       container.sh                ← install + stow for container profile
       personal.sh                 ← install + stow for personal profile
@@ -32,22 +33,24 @@ dotfiles/
 
 Minimal environment. Installs and stows only what's needed for terminal work.
 
-**Installs:** nvim, tmux, yazi, fzf, ripgrep, bat, zoxide
-**Stows:** `nvim`, `tmux`, `yazi`
+**Installs:** nvim (0.11.x), tmux, yazi*, fzf, ripgrep, bat, zoxide
+**Stows:** `nvim`, `tmux`, `yazi`*
+
+*yazi skipped with a warning on OSes that don't package it (Ubuntu, Debian, Alpine)
 
 ### Personal
 
 Full developer setup for a personal laptop.
 
-**Installs:** nvim, tmux, yazi, fzf, ripgrep, bat, zoxide, fish, kitty, node, python, rust, go, gcc/g++
+**Installs:** nvim (0.11.x), tmux, yazi, fzf, ripgrep, bat, zoxide, fish, kitty, node, python, go, gcc/g++
 **Stows:** `nvim`, `tmux`, `yazi`, `fish`, `kitty`, `scripts`
 
 **Optional flags (personal only):**
 
-| Flag | Installs & stows |
-|------|-----------------|
-| `--omarchy` | omarchy + hypr + waybar |
-| `--hypr` | hypr + waybar (no omarchy) |
+| Flag | Effect |
+|------|--------|
+| `--omarchy` | Stows `omarchy`, `hypr`, `waybar` — assumes already on an omarchy device, no installation |
+| `--hypr` | Stows `hypr`, `waybar` — assumes hyprland is already installed, no omarchy |
 
 ---
 
@@ -56,20 +59,53 @@ Full developer setup for a personal laptop.
 | OS | Package manager | Notes |
 |----|----------------|-------|
 | Arch Linux | `pacman -S` | |
-| Ubuntu / Debian | `apt-get install` | some packages renamed (e.g. `bat` → `batcat`) |
+| Ubuntu / Debian | `apt-get install` | `bat` → `batcat`; nvim from GitHub releases (see below); yazi skipped |
 | macOS | `brew install` | Homebrew installed automatically if missing |
 | Fedora / RHEL | `dnf install` | |
-| Alpine | `apk add` | common in containers |
+| Alpine | `apk add` | common in containers; yazi skipped |
 
-`pkgs.sh` exposes a single `install_pkg <name>` function. It detects the OS once, selects the right package manager, and handles cross-OS name differences internally (e.g. `bat` is `batcat` on Ubuntu/Debian).
+`pkgs.sh` exposes a single `install_pkg <name>` function. It detects the OS once, selects the right package manager, and handles cross-OS name differences internally.
+
+---
+
+## Neovim Version Handling
+
+Target version: **0.11.x**
+
+Neovim is handled by a dedicated `scripts/install/nvim.sh` rather than `install_pkg`, because version requirements vary by OS:
+
+| OS | Method |
+|----|--------|
+| Arch | `pacman -S neovim` (ships current) |
+| macOS | `brew install neovim` (ships current) |
+| Fedora | `dnf install neovim` (ships current) |
+| Ubuntu / Debian | Download prebuilt tarball from GitHub releases (`nvim-linux-x86_64.tar.gz`) and install to `/usr/local` |
+| Alpine | `apk add neovim` + version check; warn if below 0.11 |
 
 ---
 
 ## Dotfiles Repo Bootstrapping
 
-`setup.sh` must bootstrap its own dependencies before doing anything else. On a completely empty container (bash only), the following must be installed via the native OS package manager before cloning or stowing: `git`, `curl` (or `wget`), `stow`. On macOS, also `brew` (installed via the official install script if missing).
+`setup.sh` must bootstrap its own dependencies before doing anything else. On a completely empty container (bash only), the following must be installed via the native OS package manager first: `git` or `curl`/`wget` (depending on bootstrap mode), `stow`. On macOS, also `brew`.
 
-Only after bootstrapping does `setup.sh` clone `https://github.com/bacenl/dotfiles` to `~/dotfiles` if not already present. If the directory exists, cloning is skipped. The `--dotfiles-dir` flag overrides the target path.
+Two bootstrap modes are supported via `--bootstrap`:
+
+### `--bootstrap curl` (default)
+Fetches and runs the script directly — no git required upfront.
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh) --profile container
+```
+The script then installs `git` and `stow` via the OS package manager, clones the repo, and continues.
+
+### `--bootstrap git`
+Installs `git`, `gh` (GitHub CLI), and `stow` via the OS package manager first, then clones the repo:
+```bash
+gh repo clone bacenl/dotfiles ~/dotfiles
+```
+Useful when authenticated access is needed (private repo or SSH preference).
+
+In both modes: if `~/dotfiles` already exists, cloning is skipped.
+The `--dotfiles-dir` flag overrides the clone target path.
 
 ---
 
@@ -85,16 +121,19 @@ Both profiles automatically install tmux plugins headlessly after stowing the tm
 ## CLI Usage
 
 ```bash
-# Container
-bash setup.sh --profile container
+# Container (curl bootstrap — works from a bare system)
+bash <(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh) --profile container
+
+# Container (git bootstrap — installs git + gh first)
+bash <(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh) --profile container --bootstrap git
 
 # Personal laptop (base)
 bash setup.sh --profile personal
 
-# Personal + full omarchy desktop (omarchy + hypr + waybar)
+# Personal + full omarchy setup (stows omarchy + hypr + waybar)
 bash setup.sh --profile personal --omarchy
 
-# Personal + hyprland only (hypr + waybar, no omarchy)
+# Personal + hyprland only (stows hypr + waybar, no omarchy)
 bash setup.sh --profile personal --hypr
 
 # Override dotfiles location
@@ -105,7 +144,10 @@ bash setup.sh --profile personal --dotfiles-dir /custom/path
 
 ## Constraints
 
-- Install method: package manager only (no compiling from source, no AppImages)
+- Install method: package manager where possible; GitHub releases tarball for nvim on Ubuntu/Debian only
+- Rust excluded — use rustup separately
+- `--omarchy` and `--hypr` only stow configs; they do not install anything — assumes the environment is already set up
 - `--omarchy` and `--hypr` are only valid with `--profile personal`
 - `stow.sh` must be idempotent — safe to run multiple times
-- No assumptions about shell (container may not have fish/bash — use `#!/bin/sh` compatible syntax where possible, or explicitly invoke `bash`)
+- Scripts use `#!/usr/bin/env bash` — bash is the minimum assumed shell
+- yazi skipped (with warning) on Ubuntu, Debian, Alpine
