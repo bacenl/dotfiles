@@ -24,11 +24,12 @@ setup_tmux_plugins() {
 
   if [ ! -d "$tpm_dir" ]; then
     echo "[install] TPM (tmux plugin manager)"
-    git clone https://github.com/tmux-plugins/tpm "$tpm_dir"
+    git clone https://github.com/tmux-plugins/tpm "$tpm_dir" \
+      || { echo "[error] failed to clone TPM" >&2; return 1; }
   else
     echo "[skip] TPM already installed"
   fi
 
-  echo "[install] tmux plugins (headless)"
+  echo "[sync] tmux plugins (headless)"
   "$tpm_dir/bin/install_plugins"
 }
