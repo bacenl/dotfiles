@@ -79,7 +79,7 @@ Neovim is handled by a dedicated `scripts/install/nvim.sh` rather than `install_
 | Arch | `pacman -S neovim` (ships current) |
 | macOS | `brew install neovim` (ships current) |
 | Fedora | `dnf install neovim` (ships current) |
-| Ubuntu / Debian | Download prebuilt tarball from GitHub releases (`nvim-linux-x86_64.tar.gz`) and install to `/usr/local` |
+| Ubuntu / Debian | Download prebuilt tarball from GitHub releases (`nvim-linux-x86_64.tar.gz`) and install to `/usr/local` and setup bin|
 | Alpine | `apk add neovim` + version check; warn if below 0.11 |
 
 ---

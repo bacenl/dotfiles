@@ -6,7 +6,7 @@ Assumes fish shell and ssh-agent are present. The config detects these automatic
 
 ```bash
 # Clone dotfiles (if not already)
-git clone <your-dotfiles-repo> ~/dotfiles
+git clone https://github.com/bacenl/dotfiles ~/dotfiles
 
 # Stow tmux config
 cd ~/dotfiles

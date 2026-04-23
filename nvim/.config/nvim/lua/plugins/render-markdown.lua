@@ -8,36 +8,40 @@ return {
   -- There was no issue, but it was creating unnecessary noise when ran
   -- :checkhealth render-markdown
   -- https://github.com/MeanderingProgrammer/render-markdown.nvim/issues/138#issuecomment-2295422741
-  opts = {
-    -- Add custom icons lamw26wmal
-    link = {
-      image = "󰥶 ",
-      custom = {
-        youtu = { pattern = "youtu%.be", icon = "󰗃 " },
+  config = function()
+    vim.api.nvim_set_hl(0, "RenderMarkdownCodeBlack", { bg = "#151c38" })
+    require("render-markdown").setup({
+      -- Add custom icons lamw26wmal
+      link = {
+        image = "󰥶 ",
+        custom = {
+          youtu = { pattern = "youtu%.be", icon = "󰗃 " },
+        },
       },
-    },
-    heading = {
-      sign = false,
-      icons = { "󰎤 ", "󰎧 ", "󰎪 ", "󰎭 ", "󰎱 ", "󰎳 " },
-      backgrounds = {
-        "Search",
-        "DiffText",
-        "DiffAdd",
-        "DiffDelete",
-        "IncSearch",
-        "PmenuThumb"
+      heading = {
+        sign = false,
+        icons = { "󰎤 ", "󰎧 ", "󰎪 ", "󰎭 ", "󰎱 ", "󰎳 " },
+        backgrounds = {
+          "Search",
+          "DiffText",
+          "DiffAdd",
+          "DiffDelete",
+          "IncSearch",
+          "PmenuThumb"
+        },
+        foregrounds = {
+          "Search",
+          "DiffText",
+          "DiffAdd",
+          "DiffDelete",
+          "IncSearch",
+          "PmenuThumb"
+        },
       },
-      foregrounds = {
-        "Search",
-        "DiffText",
-        "DiffAdd",
-        "DiffDelete",
-        "IncSearch",
-        "PmenuThumb"
+      code = {
+        border = "thick",
+        highlight = "RenderMarkdownCodeBlack",
       },
-    },
-    code = {
-      border = "thick"
-    },
-  },
+    })
+  end,
 }

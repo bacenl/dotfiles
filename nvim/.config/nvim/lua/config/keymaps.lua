@@ -40,3 +40,12 @@ vim.keymap.set('n', '<leader>ta', function()
   vim.cmd('edit ' .. anki_path)
 end, { desc = 'Open Anki' })
 
+vim.keymap.set("n", "<leader>mi", function()
+  local venv = os.getenv("VIRTUAL_ENV")
+  if venv ~= nil then
+    local name = string.match(venv, "/.+/(.+)")
+    vim.cmd(("MoltenInit %s"):format(name))
+  else
+    vim.cmd("MoltenInit python3")
+  end
+end, { desc = "MoltenInit: auto venv kernel", silent = true })
