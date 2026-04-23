@@ -20,12 +20,16 @@ install_nvim() {
     alpine)
       _sudo apk add --no-cache neovim
       local installed_ver
-      installed_ver=$(nvim --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+')
-      local major minor
-      major=$(echo "$installed_ver" | cut -d. -f1)
-      minor=$(echo "$installed_ver" | cut -d. -f2)
-      if [ "$major" -lt 1 ] && [ "$minor" -lt 11 ]; then
-        echo "[warn] Alpine neovim is $installed_ver — expected 0.11+. Config may not work." >&2
+      installed_ver=$(nvim --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+' || true)
+      if [ -z "$installed_ver" ]; then
+        echo "[warn] Could not determine installed neovim version." >&2
+      else
+        local major minor
+        major=$(echo "$installed_ver" | cut -d. -f1)
+        minor=$(echo "$installed_ver" | cut -d. -f2)
+        if [ "$major" -eq 0 ] && [ "$minor" -lt 11 ]; then
+          echo "[warn] Alpine neovim is $installed_ver — expected 0.11+. Config may not work." >&2
+        fi
       fi
       ;;
     debian)
@@ -39,6 +43,11 @@ install_nvim() {
 }
 
 _install_nvim_debian() {
+  local tmp
+  tmp=$(mktemp -d)
+  # shellcheck disable=SC2064
+  trap "rm -rf '$tmp'" EXIT
+
   local arch
   arch=$(uname -m)
   local tarball
@@ -52,19 +61,15 @@ _install_nvim_debian() {
   esac
 
   local url="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${tarball}"
-  local tmp
-  tmp=$(mktemp -d)
 
   echo "[download] $url"
   curl -fsSL "$url" -o "$tmp/nvim.tar.gz"
   tar -xzf "$tmp/nvim.tar.gz" -C "$tmp"
 
   # The extracted dir is e.g. nvim-linux-x86_64/
-  local extracted_dir
-  extracted_dir=$(find "$tmp" -maxdepth 1 -mindepth 1 -type d | head -1)
+  local extracted_dir="${tarball%.tar.gz}"
 
-  _sudo cp -r "$extracted_dir/." /usr/local/
-  rm -rf "$tmp"
+  _sudo cp -r "$tmp/$extracted_dir/." /usr/local/
 
   echo "[ok] neovim installed to /usr/local/bin/nvim"
 }
