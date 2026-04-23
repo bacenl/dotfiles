@@ -33,7 +33,7 @@ install_nvim() {
       fi
       ;;
     debian)
-      _install_nvim_debian
+      ( _install_nvim_debian )
       ;;
     *)
       echo "[error] unsupported OS for neovim install: $OS" >&2
