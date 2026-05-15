@@ -23,8 +23,9 @@ run_container_profile() {
   echo ""
   echo "==> [container] Stowing configs"
 
-  do_stow nvim "$dotfiles_dir"
-  do_stow tmux "$dotfiles_dir"
+  do_stow nvim   "$dotfiles_dir"
+  do_stow tmux   "$dotfiles_dir"
+  do_stow claude "$dotfiles_dir"
 
   # Only stow yazi if it was installed (not skipped)
   local yazi_pkg

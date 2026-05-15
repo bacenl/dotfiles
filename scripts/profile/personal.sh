@@ -27,7 +27,7 @@ run_personal_profile() {
   echo ""
   echo "==> [personal] Stowing configs"
 
-  local stow_targets=(nvim tmux fish kitty scripts)
+  local stow_targets=(nvim tmux fish kitty scripts claude)
   for target in "${stow_targets[@]}"; do
     do_stow "$target" "$dotfiles_dir"
   done
