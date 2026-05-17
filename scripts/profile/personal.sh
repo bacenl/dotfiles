@@ -17,7 +17,7 @@ run_personal_profile() {
 
   install_nvim
 
-  local pkgs=(tmux fzf ripgrep bat zoxide fish kitty node python go gcc "g++")
+  local pkgs=(tmux fzf ripgrep bat zoxide fish kitty node python go gcc)
   for pkg in "${pkgs[@]}"; do
     install_pkg "$pkg"
   done
@@ -41,7 +41,7 @@ run_personal_profile() {
     echo "[skip] stow: yazi not installed on $OS"
   fi
 
-  # Desktop environment stowing (no installation — assumes already set up)
+  # Desktop environment setup (stow configs + omarchy-specific installs)
   case "$desktop_flag" in
     omarchy)
       echo ""
@@ -49,6 +49,33 @@ run_personal_profile() {
       do_stow omarchy "$dotfiles_dir"
       do_stow hypr    "$dotfiles_dir"
       do_stow waybar  "$dotfiles_dir"
+
+      echo ""
+      echo "==> [personal] Installing interception tools (caps2esc)"
+      install_pkg interception-tools
+      install_pkg interception-caps2esc
+      local caps2esc_conf="/etc/interception/udevmon.d/caps2esc.yaml"
+      if [ ! -f "$caps2esc_conf" ]; then
+        sudo mkdir -p "$(dirname "$caps2esc_conf")"
+        sudo tee "$caps2esc_conf" > /dev/null <<'CAPS2ESC'
+- JOB: "intercept -g $DEVNODE | caps2esc -m 1 | uinput -d $DEVNODE"
+  DEVICE:
+    EVENTS:
+      EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
+CAPS2ESC
+      fi
+      sudo systemctl enable --now udevmon.service
+
+      echo ""
+      echo "==> [personal] Installing Japanese and Chinese language support"
+      local lang_pkgs=(
+        noto-fonts-cjk noto-fonts-emoji
+        fcitx5 fcitx5-mozc fcitx5-chinese-addons
+        fcitx5-gtk fcitx5-qt fcitx5-configtool
+      )
+      for pkg in "${lang_pkgs[@]}"; do
+        install_pkg "$pkg"
+      done
       ;;
     hypr)
       echo ""
