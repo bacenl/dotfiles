@@ -14,6 +14,20 @@ do_stow() {
   fi
 
   echo "[stow] $pkg"
+
+  # Detect directories that conflict with stow's folding and remove them
+  local sim_out
+  sim_out=$(stow --dir="$dotfiles_dir" --target="$HOME" --simulate --restow "$pkg" 2>&1 || true)
+  while IFS= read -r line; do
+    if [[ "$line" =~ existing\ target\ is\ not\ owned\ by\ stow:\ (.+) ]]; then
+      local conflict="$HOME/${BASH_REMATCH[1]}"
+      if [ -d "$conflict" ] && [ ! -L "$conflict" ]; then
+        echo "[clean] removing conflicting directory: $conflict"
+        rm -rf "$conflict"
+      fi
+    fi
+  done <<< "$sim_out"
+
   stow --dir="$dotfiles_dir" --target="$HOME" --restow "$pkg"
 }
 
