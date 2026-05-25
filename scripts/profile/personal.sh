@@ -24,6 +24,10 @@ run_personal_profile() {
 
   install_pkg yazi
 
+  if command -v yay &>/dev/null; then
+    yay -S --noconfirm gazelle-tui
+  fi
+
   echo ""
   echo "==> [personal] Stowing configs"
 
@@ -49,6 +53,20 @@ run_personal_profile() {
       do_stow omarchy "$dotfiles_dir"
       do_stow hypr    "$dotfiles_dir"
       do_stow waybar  "$dotfiles_dir"
+
+      echo ""
+      echo "==> [personal] Setting up NetworkManager (replacing iwd for 802.1X support)"
+      install_pkg networkmanager
+      install_pkg wpa_supplicant
+      install_pkg network-manager-applet
+      install_pkg nm-connection-editor
+      sudo systemctl stop iwd systemd-networkd 2>/dev/null || true
+      sudo systemctl disable iwd systemd-networkd 2>/dev/null || true
+      sudo systemctl enable --now NetworkManager
+      local waybar_cfg="$HOME/.config/waybar/config.jsonc"
+      if [ -f "$waybar_cfg" ]; then
+        sed -i 's|"on-click": "omarchy-launch-wifi"|"on-click": "nm-applet --indicator"|g' "$waybar_cfg"
+      fi
 
       echo ""
       echo "==> [personal] Installing interception tools (caps2esc)"
@@ -88,6 +106,10 @@ CAPS2ESC
   echo ""
   echo "==> [personal] Setting up tmux plugins"
   setup_tmux_plugins
+
+  echo ""
+  echo "==> [personal] Enabling ssh-agent user service"
+  systemctl --user enable --now ssh-agent
 
   echo ""
   echo "[done] personal profile complete"
