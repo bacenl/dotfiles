@@ -14,7 +14,7 @@ PANE_CACHE_FILE="$PANE_CACHE_DIR/panes.cache"
 # # The number prefix is the depth for the Path [OPTIONAL]
 # TS_EXTRA_SEARCH_PATHS=(~/ghq:3 ~/Git:3 ~/.config:2)
 # # if set this override the TS_MAX_DEPTH (1)
-# TS_MAX_DEPTH=2
+TS_MAX_DEPTH=4
 # This is not meant to override .tmux-sessionizer.  At first i thought this
 # would be a good command, but i don't think its ackshually what i want.
 #
