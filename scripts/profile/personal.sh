@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins
+# Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins,
+# reload_tmux_config
 # already defined (sourced by setup.sh before calling this).
 #
 # Arguments:
@@ -17,7 +18,7 @@ run_personal_profile() {
 
   install_nvim
 
-  local pkgs=(tmux fzf ripgrep bat zoxide fish kitty node python go gcc)
+  local pkgs=(tmux fzf ripgrep bat zoxide fish kitty node python go gcc gh)
   for pkg in "${pkgs[@]}"; do
     install_pkg "$pkg"
   done
@@ -55,18 +56,11 @@ run_personal_profile() {
       do_stow waybar  "$dotfiles_dir"
 
       echo ""
-      echo "==> [personal] Setting up NetworkManager (replacing iwd for 802.1X support)"
-      install_pkg networkmanager
-      install_pkg wpa_supplicant
-      install_pkg network-manager-applet
-      install_pkg nm-connection-editor
-      sudo systemctl stop iwd systemd-networkd 2>/dev/null || true
-      sudo systemctl disable iwd systemd-networkd 2>/dev/null || true
-      sudo systemctl enable --now NetworkManager
-      local waybar_cfg="$HOME/.config/waybar/config.jsonc"
-      if [ -f "$waybar_cfg" ]; then
-        sed -i 's|"on-click": "omarchy-launch-wifi"|"on-click": "nm-applet --indicator"|g' "$waybar_cfg"
-      fi
+      echo "==> [personal] Installing desktop applications"
+      install_pkg vivaldi
+      install_pkg syncthing
+      systemctl --user enable --now syncthing.service
+      omarchy default terminal kitty || echo "[warn] Kitty was installed but could not be selected automatically"
 
       echo ""
       echo "==> [personal] Installing interception tools (caps2esc)"
@@ -84,16 +78,6 @@ CAPS2ESC
       fi
       sudo systemctl enable --now udevmon.service
 
-      echo ""
-      echo "==> [personal] Installing Japanese and Chinese language support"
-      local lang_pkgs=(
-        noto-fonts-cjk noto-fonts-emoji
-        fcitx5 fcitx5-mozc fcitx5-chinese-addons
-        fcitx5-gtk fcitx5-qt fcitx5-configtool
-      )
-      for pkg in "${lang_pkgs[@]}"; do
-        install_pkg "$pkg"
-      done
       ;;
     hypr)
       echo ""
@@ -106,11 +90,55 @@ CAPS2ESC
   echo ""
   echo "==> [personal] Setting up tmux plugins"
   setup_tmux_plugins
+  reload_tmux_config
 
   echo ""
-  echo "==> [personal] Enabling ssh-agent user service"
-  systemctl --user enable --now ssh-agent
+  echo "==> [personal] Enabling ssh-agent user socket"
+  if command -v systemctl >/dev/null 2>&1 &&
+     systemctl --user cat ssh-agent.socket >/dev/null 2>&1; then
+    systemctl --user enable --now ssh-agent.socket
+  else
+    echo "[skip] ssh-agent socket: packaged user unit unavailable"
+  fi
+
+  if [ "$desktop_flag" = "omarchy" ]; then
+    echo ""
+    echo "==> [personal] Installing Japanese and Chinese language support"
+    local lang_pkgs=(
+      noto-fonts-cjk noto-fonts-emoji
+      fcitx5 fcitx5-mozc fcitx5-chinese-addons
+      fcitx5-gtk fcitx5-qt fcitx5-configtool
+    )
+    for pkg in "${lang_pkgs[@]}"; do
+      install_pkg "$pkg"
+    done
+
+    echo ""
+    echo "==> [personal] Setting up NetworkManager (final automated step)"
+    install_pkg networkmanager
+    install_pkg wpa_supplicant
+    install_pkg network-manager-applet
+    install_pkg nm-connection-editor
+    sudo systemctl stop iwd systemd-networkd 2>/dev/null || true
+    sudo systemctl disable iwd systemd-networkd 2>/dev/null || true
+    sudo systemctl enable --now NetworkManager
+  fi
 
   echo ""
   echo "[done] personal profile complete"
+
+  if [ "$desktop_flag" = "omarchy" ]; then
+    cat <<'EOF'
+
+Final interactive setup:
+  1. Run: gh auth login
+  2. Open http://127.0.0.1:8384, pair Syncthing, and add your Obsidian and private folders.
+  3. Run: fcitx5-config-qt
+     Add the Japanese and Chinese input methods you use.
+  4. Reboot.
+
+After reboot, verify Vivaldi, Kitty, tmux plugins, Syncthing, and SSH access.
+See INSTALL.md for details.
+EOF
+  fi
 }

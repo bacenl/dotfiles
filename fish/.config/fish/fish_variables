@@ -1,5 +1,9 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
+SETUVAR --export ANTHROPIC_DEFAULT_OPUS_MODEL:global\x2eanthropic\x2eclaude\x2dopus\x2d4\x2d6\x2dv1
+SETUVAR --export ANTHROPIC_DEFAULT_OPUS_MODEL_NAME:Opus\x204\x2e6\x20Bedrock
+SETUVAR --export ANTHROPIC_DEFAULT_SONNET_MODEL:global\x2eanthropic\x2eclaude\x2dsonnet\x2d4\x2d6
+SETUVAR --export ANTHROPIC_DEFAULT_SONNET_MODEL_NAME:Sonnet\x204\x2e6\x20Bedrock
 SETUVAR --export SSH_AGENT_PID:9888
 SETUVAR --export SSH_AUTH_SOCK:/home/bacen/\x2essh/agent/s\x2ewK5iMNfE7b\x2eagent\x2eIE7DIkQlS5
 SETUVAR __fish_initialized:4300

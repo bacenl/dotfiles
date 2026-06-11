@@ -1,226 +1,156 @@
-# References
-[Single Drive](https://www.youtube.com/watch?v=kE0foLfYkfk)
-[Two Drive](https://www.youtube.com/watch?v=vsxAbDcTPRU)
+# Windows 11 and Omarchy Dual Boot
 
-## What You Need
-- Windows 11 already installed on your single drive
-- Two USB drives: one for the Omarchy ISO, one to keep handy (optional backup)
-- Secure Boot disabled in BIOS
-- A wired or 2.4GHz dongle keyboard (Bluetooth won't work at the LUKS prompt)
+This guide assumes Windows 11 is already installed in UEFI mode and Arch Linux
+will be installed beside it on the same disk. Read
+[ARCH_INSTALL_GUIDE.md](ARCH_INSTALL_GUIDE.md) before starting.
 
----
+## Requirements
 
-## Phase 1: Shrink Windows to Make Free Space
+- A verified backup of important files.
+- A Windows recovery drive or installer.
+- The Windows BitLocker recovery key, even if BitLocker will be suspended.
+- An Arch Linux USB drive.
+- Secure Boot disabled.
+- A wired or 2.4 GHz keyboard for the LUKS prompt.
 
-**Step 1 — Create a restore point in Windows**
-Search for "restore point" in the Start menu and create one. Safety net in case anything goes wrong.
+Partition names in this guide are placeholders. Confirm the disk, partition
+type, filesystem, size, and labels with `lsblk -f` before formatting anything.
+Never format the Windows EFI, Windows data, or recovery partitions.
 
-**Step 2 — Disable BitLocker (if on Windows 11 Pro)**
-BitLocker can interfere with Linux. Windows 11 Home users can skip this.
+## 1. Prepare Windows
 
-**Step 3 — Shrink your Windows partition**
-Right-click the desktop > Open Terminal, type:
-```
-diskmgmt.msc
-```
-Right-click your C: drive > **Shrink Volume**. Decide how to split your remaining space across three uses:
-- Omarchy (recommend at least 60–100GB)
-- Windows keeping enough to breathe (at least 60GB free)
-- Shared NTFS partition (whatever you want left over)
+1. Install pending Windows updates and create a restore point.
+2. Back up the BitLocker recovery key. Suspend or disable BitLocker before
+   changing partitions.
+3. Disable Fast Startup in Control Panel under Power Options.
+4. Open Disk Management with `diskmgmt.msc`.
+5. Shrink `C:` to create unallocated space for Linux and, optionally, a shared
+   data partition.
 
-For example on a 1TB drive with Windows using ~200GB, you might shrink by 600GB, leaving 400GB for Omarchy and 200GB for shared. Just shrink the total combined amount for now — you'll carve it up precisely later. Click **Shrink**.
+Leave the Linux portion unallocated. Windows can create and format an optional
+shared NTFS volume now. Do not create another Microsoft Reserved partition;
+Windows already created the one it needs.
 
-You now have unallocated free space on your drive.
+## 2. Boot the Arch USB
 
----
+Boot the USB in UEFI mode and connect to the network as described in
+[ARCH_INSTALL_GUIDE.md](ARCH_INSTALL_GUIDE.md).
 
-## Phase 2: Create Partitions from the Arch Linux Live USB
+Inspect the disk:
 
-**Step 4 — Flash the Omarchy/Arch Linux ISO**
-Download the Arch Linux ISO from archlinux.org. Flash it to a USB with Balena Etcher or Rufus.
-
-**Step 5 — Boot into Arch Linux**
-Enter BIOS (F2/Del/F7), disable Secure Boot, set USB as first boot device. Boot into Arch. You'll land at:
-```
-root@archiso ~#
-```
-Connect to Wi-Fi if needed:
-```
-iwctl
-station wlan0 scan
-station wlan0 connect <your-network>
+```bash
+lsblk -o NAME,SIZE,FSTYPE,FSVER,LABEL,PARTLABEL,MOUNTPOINTS
 ```
 
-**Step 6 — Partition the free space with cfdisk**
-```
-lsblk
-```
-Identify your drive (likely `nvme0n1`). Then:
-```
+Identify:
+
+- The existing EFI System Partition, normally FAT32 and a few hundred MiB.
+- The Windows NTFS partition.
+- The Windows recovery partition.
+- The unallocated space created in Windows.
+
+## 3. Partition for Arch
+
+Start `cfdisk` against the whole target disk, for example:
+
+```bash
 cfdisk /dev/nvme0n1
 ```
-You'll see your existing Windows partitions (EFI, Windows, Recovery) and the unallocated free space at the bottom. In the free space, create three new partitions:
 
-- **Partition A — Omarchy root:** Your chosen size (e.g. 400GB), type: `Linux filesystem`
-- **Partition B — Windows Reserved:** 128MB, type: `Microsoft reserved` (some guides use 128M with type `0C01` via gdisk — cfdisk may not have this exact type, which is fine to skip)
-- **Partition C — Shared NTFS:** Remaining space, type: `Microsoft basic data`
+Create one Linux filesystem partition in the unallocated space. Optionally
+create a Microsoft basic data partition for shared NTFS storage if Windows did
+not create it.
 
-Select **Write**, type `yes`, then **Quit**.
+Do not delete, resize, or format any existing Windows partition. Write the new
+partition table only after checking every entry.
 
-**Step 7 — Format the partitions**
-Format the Omarchy root partition as btrfs:
-```
-mkfs.btrfs -f /dev/nvme0n1pX   # replace X with your Omarchy partition number
-```
-Format the shared partition as NTFS:
-```
-mkfs.ntfs /dev/nvme0n1pY    # replace Y with your shared partition number
-```
-Leave the Windows reserved partition alone.
+## 4. Install Arch
 
-**Step 8 — Mount the partitions**
-```
-mount /dev/nvme0n1pX /mnt
-mkdir /mnt/boot
-mount /dev/nvme0n1pY /mnt/boot   # pY is usually the existing Windows EFI partition
-```
-Verify with `lsblk` that everything looks right.
+Run:
 
----
-
-## Phase 3: Install Arch + Omarchy
-
-**Step 9 — Run archinstall**
-```
+```bash
 archinstall
 ```
-Configure all settings per the [Omarchy manual install docs](https://learn.omacom.io/2/the-omarchy-manual/96/manual-installation). The critical choices:
 
-- **Disk configuration:** Choose **Pre-mounted configuration**, set mount path to `/mnt`
-- **Bootloader:** Select **Limine** — make sure "Install to removable location" is **disabled**
-- **Hostname, user, password, timezone, locale:** Set as desired
-- **Audio:** Pipewire
-- **Network:** First option
-- **Do not select a profile**
+Use manual partitioning so the existing Windows partitions are preserved:
 
-Hit **Install** and wait.
+- Select the new Linux partition for the Btrfs root filesystem.
+- Enable LUKS encryption on the Linux partition.
+- Reuse the existing EFI System Partition as `/boot`.
+- Do not enable formatting for the EFI System Partition.
+- Select Limine as the bootloader.
+- Use PipeWire, copy the ISO network configuration, and do not select a desktop
+  profile.
 
-**Step 11 — Reboot**
-Remove the USB. Your system should boot into Arch CLI. Log in with your username and password, then install Omarchy:
+The archinstall interface changes over time. Before installation, inspect its
+summary and verify that formatting is enabled only for the new Linux partition.
+If the summary proposes formatting the EFI or any Windows partition, cancel and
+correct the configuration.
+
+Complete the remaining choices using
+[ARCH_INSTALL_GUIDE.md](ARCH_INSTALL_GUIDE.md), then install and reboot.
+
+## 5. Install Omarchy
+
+Log in to the new Arch system and run:
+
+```bash
+curl -fsSL https://omarchy.org/install | bash
 ```
-curl -fsSL https://omarchy.org | bash
-```
-Reboot when done.
 
----
+Allow Omarchy to finish and reboot.
 
-## Phase 4: Add Windows to the Boot Menu
+## 6. Add Windows to Limine
 
-**Step 12 — Add Windows to Limine**
-Boot into Omarchy, open a terminal (Super + Enter):
-```
+From Omarchy:
+
+```bash
 sudo limine-scan
 ```
-Find the Windows Boot Manager entry and select it to add it to Limine. Verify with:
-```
-cat /boot/limine.conf
-```
-You should see a Windows entry. If the auto-detect doesn't work, add it manually:
-```
-sudo nano /boot/limine.conf
-```
-Add:
-```
-/Windows
-  comment: Microsoft Windows 11
-  comment: order-priority=20
-  protocol: efi_chainload
-  image_path: boot():/EFI/Microsoft/Boot/bootmgfw.efi
+
+Review the resulting boot entries:
+
+```bash
+sudo grep -n -A8 -B2 -i windows /boot/limine.conf
 ```
 
----
+Reboot and test both Omarchy and Windows. Keep the firmware's Windows Boot
+Manager entry available as a fallback until both paths have been tested.
 
-## Phase 5: Set Up the Shared NTFS Partition
+## 7. Mount an optional shared NTFS volume
 
-**Step 13 — Format shared partition in Windows**
-Reboot into Windows. Open Disk Management (`diskmgmt.msc`). Find the unformatted partition you created for sharing. Right-click > **New Simple Volume**, format as NTFS, assign a drive letter (e.g. `D:`), label it `Shared`.
+Boot Windows first, assign the shared volume a drive letter, format it as NTFS
+if necessary, and confirm Fast Startup remains disabled.
 
-**Step 14 — Disable Fast Startup in Windows**
-Control Panel > Power Options > Choose what the power buttons do > uncheck **Turn on fast startup**. Without this, Linux will mount the NTFS partition as read-only.
+Back in Omarchy, find its UUID:
 
-**Step 15 — Mount the shared partition in Omarchy**
-Reboot into Omarchy. Find the UUID of your shared partition:
+```bash
+lsblk -f
 ```
-sudo blkid /dev/nvme0n1pY
+
+Create a mount point:
+
+```bash
+sudo mkdir -p /mnt/shared
 ```
-Create a mount point and add it to fstab:
+
+Add an `/etc/fstab` entry using the actual UUID:
+
+```fstab
+UUID=<shared-ntfs-uuid> /mnt/shared ntfs3 uid=1000,gid=1000,umask=022,nofail,x-systemd.automount 0 0
 ```
-sudo mkdir /mnt/shared
-sudo nano /etc/fstab
-```
-Add this line:
-```
-UUID=<your-uuid>  /mnt/shared  ntfs-3g  defaults,uid=1000,gid=1000,nofail  0  0
-```
-Test it:
-```
+
+Confirm the user's numeric IDs with `id -u` and `id -g`; replace `1000` if
+needed. Validate before rebooting:
+
+```bash
 sudo mount -a
-```
-No errors means you're good. Optionally create a symlink for easy access from your home folder:
-```
-ln -s /mnt/shared ~/shared
+findmnt /mnt/shared
 ```
 
----
+## 8. Run personal setup
 
-## Final Partition Layout
-
-| Partition | Type | Purpose |
-|---|---|---|
-| p1 (existing) | FAT32 EFI | Shared bootloader (Windows + Limine) |
-| p2 (existing) | NTFS | Windows 11 |
-| p3 (existing) | NTFS | Windows Recovery |
-| p4 (new) | btrfs | Omarchy Linux |
-| p5 (new) | Microsoft reserved | Windows reserved (128MB) |
-| p6 (new) | NTFS | Shared between both OS |
-
-Your partition numbers will vary — always double-check with `lsblk` before formatting anything.
-
----
-## Other things to set up
-### Basic
-Set up browser and git to get the set-up repo
-
-### Languages
-```bash
-fcitx5-config-qt
-```
-Add these to `~/.config/environment.d/fcitx5.conf` (create it if it doesn't exist):
-
-```ini
-GTK_IM_MODULE=fcitx
-QT_IM_MODULE=fcitx
-XMODIFIERS=@im=fcitx
-```
-Add this line to `~/.config/hypr/hyprland.conf` (or a custom conf file Omarchy includes):
-```
-exec-once = fcitx5 --replace -d
-```
-Run the config tool:
-
-```bash
-fcitx5-config-qt
-```
-
-In the configuration tool, add your desired input methods — **Mozc** for Japanese, and **Pinyin** (for Simplified Chinese) or **Cangjie/Bopomofo** (for Traditional). Click Apply after adding them.
-
-Switching between inputs is typically **Ctrl+Space** by default.
-
----
-
-Electron apps need an extra flag to use Fcitx5. Create a flags file for each app, e.g. for VS Code:
-
-```bash
-# ~/.config/code-flags.conf
---enable-wayland-ime
-```
+Follow [INSTALL.md](INSTALL.md) to install Vivaldi, GitHub CLI, Syncthing,
+dotfiles, language support, and NetworkManager. GitHub authentication,
+Syncthing pairing, and input-method selection are the final interactive steps
+after automation completes.

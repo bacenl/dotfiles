@@ -1,94 +1,134 @@
-# Installation
+# Dotfiles Installation
 
-## Requirements
+## Fresh Omarchy machine
 
-Only `bash` and internet access are required on a fresh system. Everything else is bootstrapped automatically.
+This setup does not require a browser, an existing GitHub login, or a
+pre-installed copy of the repository. The repository must remain public for
+this bootstrap path.
 
----
+### Recommended: download and inspect
 
-## Quick Start
-
-### Container (bare Ubuntu/Debian/Alpine/Arch — bash only)
+Use a published tag for `REF` after creating a release:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh) --profile container
+REF=v1.0.0
+curl -fsSLo /tmp/dotfiles-setup.sh \
+  "https://raw.githubusercontent.com/bacenl/dotfiles/${REF}/setup.sh"
+less /tmp/dotfiles-setup.sh
+bash /tmp/dotfiles-setup.sh \
+  --profile personal \
+  --omarchy \
+  --dotfiles-ref "$REF"
 ```
 
-### Container via git (authenticated clone)
+Pinning both the downloaded script and `--dotfiles-ref` ensures all installer
+files come from the same immutable release.
+
+### Direct pipe
+
+This is convenient but does not provide an inspection step:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh) --profile container --bootstrap git
+REF=v1.0.0
+curl -fsSL "https://raw.githubusercontent.com/bacenl/dotfiles/${REF}/setup.sh" |
+  bash -s -- --profile personal --omarchy --dotfiles-ref "$REF"
 ```
 
-> `--bootstrap git` installs `git` and `gh` first, then clones via `gh repo clone`. You will be prompted to authenticate with GitHub.
+Do not copy an example tag until that tag exists in the repository. For
+development before the first release, replace `v1.0.0` with `master`; this is
+functional but mutable and therefore less safe.
 
----
+## What the personal Omarchy profile does
 
-## Personal Laptop
+The script:
+
+1. Installs Git, curl, Stow, Neovim, tmux, Fish, Kitty, development tools, and
+   GitHub CLI.
+2. Clones the public dotfiles repository over HTTPS.
+3. Installs and configures Vivaldi, Syncthing, Kitty, Hyprland, Waybar, TPM,
+   tmux, Caps/Escape handling, and the packaged SSH agent socket.
+4. Installs Japanese and Chinese input support as the second-last automated
+   operation.
+5. Replaces iwd/systemd-networkd with NetworkManager as the final automated
+   operation.
+
+NetworkManager is deliberately last because changing the active network stack
+can interrupt the installer connection.
+
+## Final interactive steps
+
+Complete these after the script prints `[done] personal profile complete`.
+
+### 1. Authenticate GitHub CLI
 
 ```bash
-# Base setup (nvim, tmux, yazi, fzf, ripgrep, bat, zoxide, fish, kitty, node, python, go, gcc)
+gh auth login
+```
+
+Choose GitHub.com and the authentication method you prefer. This login is not
+required to download or run the setup.
+
+### 2. Pair Syncthing and add folders
+
+Open <http://127.0.0.1:8384>. Add the other device, then add and share:
+
+- Your Obsidian vault directory.
+- Your private directory.
+
+Use the existing paths on each device rather than hard-coding paths in the
+installer. Confirm both folders report `Up to Date` before deleting or moving
+any original copies.
+
+### 3. Select input methods
+
+```bash
+fcitx5-config-qt
+```
+
+Add Mozc for Japanese and the desired Chinese input method, then apply the
+configuration.
+
+### 4. Reboot and verify
+
+```bash
+systemctl reboot
+```
+
+After reboot:
+
+```bash
+omarchy default terminal
+systemctl --user is-active syncthing.service ssh-agent.socket
+tmux source-file ~/.config/tmux/tmux.conf
+ssh-add -l
+```
+
+Also launch Vivaldi and confirm the Syncthing folders are connected.
+
+## Other profiles
+
+```bash
+# Existing local clone, personal terminal setup only
 bash setup.sh --profile personal
 
-# + omarchy desktop (stows omarchy + hypr + waybar — assumes omarchy already installed)
-bash setup.sh --profile personal --omarchy
+# Container setup
+bash setup.sh --profile container
 
-# + hyprland only (stows hypr + waybar — no omarchy)
+# Hyprland configs without Omarchy-specific setup
 bash setup.sh --profile personal --hypr
 ```
 
-> Run `setup.sh` directly if the dotfiles repo is already cloned. Use the `curl` one-liner otherwise.
-
----
-
-## Options
+Available options:
 
 | Flag | Description |
-|------|-------------|
-| `--profile container\|personal` | **Required.** Which profile to install. |
-| `--omarchy` | Personal only. Stow omarchy + hypr + waybar configs. |
-| `--hypr` | Personal only. Stow hypr + waybar configs (no omarchy). |
-| `--bootstrap curl\|git` | Clone method. Default: `curl` (HTTPS). Use `git` for authenticated access via `gh`. |
-| `--dotfiles-dir <path>` | Override clone target. Default: `~/dotfiles`. |
-| `--nvim-version <version>` | Neovim version for Ubuntu/Debian tarball install. Default: `0.11.0`. |
+|---|---|
+| `--profile container\|personal` | Required installation profile |
+| `--omarchy` | Personal profile with Omarchy desktop setup |
+| `--hypr` | Personal profile with Hyprland and Waybar configs |
+| `--bootstrap curl\|git` | Public HTTPS clone or authenticated `gh` clone |
+| `--dotfiles-ref <ref>` | Tag, branch, or commit checked out after cloning |
+| `--dotfiles-dir <path>` | Clone location; defaults to `~/dotfiles` |
+| `--nvim-version <version>` | Neovim tarball version for Debian/Ubuntu |
 
----
-
-## What Gets Installed
-
-### Container profile
-
-| Tool | Notes |
-|------|-------|
-| neovim 0.11.x | Via tarball on Ubuntu/Debian; package manager elsewhere |
-| tmux | + TPM plugins installed headlessly |
-| yazi | Skipped on Ubuntu, Debian, Alpine (not packaged) |
-| fzf, ripgrep, bat, zoxide | — |
-
-**Stowed configs:** `nvim`, `tmux`, `yazi` (if installed)
-
-### Personal profile
-
-Everything in container, plus:
-
-| Tool | Notes |
-|------|-------|
-| fish | — |
-| kitty | — |
-| node, python, go | — |
-| gcc, g++ | On macOS: install Xcode Command Line Tools separately |
-
-**Stowed configs:** `nvim`, `tmux`, `yazi`, `fish`, `kitty`, `scripts`
-
-With `--omarchy`: also stows `omarchy`, `hypr`, `waybar`
-With `--hypr`: also stows `hypr`, `waybar`
-
----
-
-## Notes
-
-- **Rust:** Not installed. Use [rustup](https://rustup.rs) separately.
-- **macOS gcc/g++:** Not installed via brew. Install Xcode CLI tools: `xcode-select --install`
-- **bat on Ubuntu/Debian:** Installed as `batcat`. Add `alias bat=batcat` to your shell config if needed.
-- **Idempotent:** Safe to re-run. Existing dotfiles directory is never overwritten; stow uses `--restow`.
-- **tmux plugins:** Installed headlessly via TPM — no running tmux session required.
+The installer is designed to be rerunnable. Stow refuses packages with tracked
+repository changes and preserves adopted untracked files for review.

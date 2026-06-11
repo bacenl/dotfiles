@@ -9,6 +9,7 @@ DOTFILES_DIR="$HOME/dotfiles"
 PROFILE=""
 DESKTOP_FLAG=""
 BOOTSTRAP="curl"
+DOTFILES_REF="${DOTFILES_REF:-master}"
 NVIM_VERSION="${NVIM_VERSION:-0.11.0}"
 
 # ──────────────────────────────────────────────
@@ -25,6 +26,8 @@ Options:
   --bootstrap <curl|git>           How to clone dotfiles. Default: curl.
                                    curl: clone via HTTPS (no auth needed).
                                    git:  install git + gh first, then clone.
+  --dotfiles-ref <ref>             Git tag, branch, or commit to check out.
+                                   Default: master.
   --dotfiles-dir <path>            Where to clone dotfiles. Default: ~/dotfiles.
   --nvim-version <version>         Neovim version for Debian/Ubuntu. Default: 0.11.0.
   -h, --help                       Show this help.
@@ -37,6 +40,7 @@ while [ $# -gt 0 ]; do
     --omarchy)        DESKTOP_FLAG="omarchy"; shift ;;
     --hypr)           DESKTOP_FLAG="hypr";    shift ;;
     --bootstrap)      BOOTSTRAP="$2";      shift 2 ;;
+    --dotfiles-ref)   DOTFILES_REF="$2";   shift 2 ;;
     --dotfiles-dir)   DOTFILES_DIR="$2";   shift 2 ;;
     --nvim-version)   NVIM_VERSION="$2";   shift 2 ;;
     -h|--help)        usage; exit 0 ;;
@@ -158,6 +162,9 @@ clone_dotfiles() {
     echo "[clone] git clone $DOTFILES_REPO $DOTFILES_DIR"
     git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
   fi
+
+  echo "[clone] checking out $DOTFILES_REF"
+  git -C "$DOTFILES_DIR" checkout --detach "$DOTFILES_REF"
 }
 
 # ──────────────────────────────────────────────

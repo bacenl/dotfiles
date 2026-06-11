@@ -1,29 +1,28 @@
-# Stowing
+# Dotfiles
 
-Create a directory in the `dotfile` folder.
-1. The first folder will be the stow name
-2. Following folders will be where 
+Personal dotfiles and setup automation for terminal containers and Arch/Omarchy
+machines.
 
-## For example:
-I want to stow `~/.config/nvim/`:
-1. `mkdir ~/dotfiles/nvim/.config/`
-2. `mv ~/.config/nvim ~/dotfiles/nvim/.config/`
-3. `cd ~/dotfiles`
-4. `stow nvim`
+See [INSTALL.md](INSTALL.md) for installation instructions,
+[ARCH_INSTALL_GUIDE.md](ARCH_INSTALL_GUIDE.md) for a fresh Arch installation,
+and [dual_boot.md](dual_boot.md) for Windows dual boot.
 
-### From: ~/dotfiles, stow does this:
+## Stow behavior
 
-1. Goes into nvim/ directory
-2. Looks for files/folders there
-3. For each, creates a symlink in PARENT directory
+The setup script uses GNU Stow to link each package into `$HOME`. When an
+existing file conflicts with a dotfile, the helper uses `stow --adopt` and then
+`git restore` to put the repository version back in place.
 
-### So from:
-`~/dotfiles/nvim/.config/nvim`
+The helper refuses to operate on a package that already has tracked staged or
+unstaged changes. Files adopted into the package that are not tracked by Git
+are retained and listed for manual review. It never deletes a conflicting
+directory.
 
-### It creates symlink at:
-`~/.config/nvim → ~/dotfiles/nvim/.config/nvim`
+To perform the same process manually:
 
-Hence, there will be a folder `~/.config/nvim` that will have a symlink to `~/dotfiles/nvim/.config/nvim/`
-
-# Getting the stow
-Clone the repo, then just use `stow <name>`
+```bash
+cd ~/dotfiles
+stow --adopt nvim
+git restore -- nvim
+git status --short -- nvim
+```

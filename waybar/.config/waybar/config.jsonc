@@ -78,7 +78,7 @@
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
     "spacing": 1,
-    "on-click": "xdg-terminal-exec --app-id=org.omarchy.Gazelle -e gazelle"
+    "on-click": "nm-connection-editor"
   },
   "power-profiles-daemon": {
     "format": "{icon}",
