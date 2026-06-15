@@ -25,9 +25,6 @@ run_personal_profile() {
 
   install_pkg yazi
 
-  if command -v yay &>/dev/null; then
-    yay -S --noconfirm gazelle-tui
-  fi
 
   echo ""
   echo "==> [personal] Stowing configs"
@@ -115,6 +112,7 @@ CAPS2ESC
 
     echo ""
     echo "==> [personal] Setting up NetworkManager (final automated step)"
+
     install_pkg networkmanager
     install_pkg wpa_supplicant
     install_pkg network-manager-applet
@@ -122,6 +120,10 @@ CAPS2ESC
     sudo systemctl stop iwd systemd-networkd 2>/dev/null || true
     sudo systemctl disable iwd systemd-networkd 2>/dev/null || true
     sudo systemctl enable --now NetworkManager
+
+    if command -v yay &>/dev/null; then
+      yay -S --noconfirm gazelle-tui
+    fi
   fi
 
   echo ""
