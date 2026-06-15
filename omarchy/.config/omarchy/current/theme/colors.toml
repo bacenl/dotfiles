@@ -1,3 +1,4 @@
+# echo -e "COLOR HERE" | while read line; do name=${line%=*}; name=${name// /}; hex=${line##*= }; hex=${hex// /}; echo "▌ $name = $hex"; convert -size 40x40 xc:"$hex" png:- | chafa --size=30x15; echo; done
 accent = "#9ebecc"
 cursor = "#ffcead"
 foreground = "#ffcead"
