@@ -132,3 +132,30 @@ Available options:
 
 The installer is designed to be rerunnable. Stow refuses packages with tracked
 repository changes and preserves adopted untracked files for review.
+
+## Pi coding agent
+
+The `pi` stow package tracks:
+
+- `~/.pi/agent/settings.json` — packages list, default model/provider, and preferences
+- `~/.pi/agent/models.json` — custom Bedrock/Anthropic model definitions
+- `~/.pi/agent/extensions/` — custom extensions (clear-on-ctrl-c, custom-status-footer, omarchy-system-theme)
+- `~/.pi/agent/skills/omarchy/` — omarchy skill
+
+These are intentionally **not** tracked:
+
+- `auth.json` — API keys and OAuth tokens (set these after install)
+- `sessions/` — conversation history
+- `git/`, `npm/` — installed package caches (reinstalled by setup)
+- `security/`, `vstack/`, `pi-vcc-config.json` — runtime state
+
+The personal profile `setup.sh` stows the `pi` package and then runs
+`pi install` for every package listed in `settings.json`. Pi itself must be
+installed separately before setup runs:
+
+```bash
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+```
+
+After `setup.sh` completes, set credentials via `/login` or by exporting the
+relevant API key environment variable before starting pi.
