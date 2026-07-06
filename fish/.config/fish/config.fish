@@ -17,16 +17,20 @@ end
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 if test -f /home/bacen/miniforge3/bin/conda
-    eval /home/bacen/miniforge3/bin/conda "shell.fish" "hook" $argv | source
+    eval /home/bacen/miniforge3/bin/conda "shell.fish" hook $argv | source
 else
     if test -f "/home/bacen/miniforge3/etc/fish/conf.d/conda.fish"
         . "/home/bacen/miniforge3/etc/fish/conf.d/conda.fish"
     else
-        set -x PATH "/home/bacen/miniforge3/bin" $PATH
+        set -x PATH /home/bacen/miniforge3/bin $PATH
     end
 end
 # <<< conda initialize <<<
 
+# Supply chain: 7-day freshness gate for uv dependency resolution
+set -gx UV_EXCLUDE_NEWER (date -u -d '7 days ago' +%Y-%m-%dT00:00:00Z 2>/dev/null; or date -u -v-7d +%Y-%m-%dT00:00:00Z 2>/dev/null)
 
 # peon-ping quick controls
-function peon; bash /home/bacen/.claude/hooks/peon-ping/peon.sh $argv; end
+function peon
+    bash /home/bacen/.claude/hooks/peon-ping/peon.sh $argv
+end

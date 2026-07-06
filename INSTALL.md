@@ -133,6 +133,29 @@ Available options:
 The installer is designed to be rerunnable. Stow refuses packages with tracked
 repository changes and preserves adopted untracked files for review.
 
+## Supply chain security
+
+The `npm` stow package tracks `~/.npmrc` with hardened defaults:
+
+```ini
+min-release-age=7       # reject packages published in the last 7 days
+ignore-scripts=true     # block postinstall/preinstall execution vectors
+save-exact=true         # pin exact versions, no ^ or ~ ranges
+```
+
+`fish/config.fish` sets `UV_EXCLUDE_NEWER` at shell startup so `uv` only resolves packages published more than 7 days ago.
+
+If `~/.npmrc` already exists before running setup, `do_stow` will adopt it automatically (via `--adopt`). If the adopted file differs from the tracked version, review with `git diff` and commit or restore as appropriate.
+
+Additional manual hardening (not managed by stow):
+
+- **pnpm**: add `blockExoticSubdeps: true` and `minimumReleaseAge: 10080` to `pnpm-workspace.yaml` per project
+- **bun**: add `[install] minimumReleaseAge = 604800` to `bunfig.toml` per project
+- **GitHub Actions**: pin third-party actions to full commit SHAs (not version tags)
+- **CI installs**: use `npm ci`, `pnpm install --frozen-lockfile`, or `uv sync --frozen` — never bare `npm install`
+
+See [~/Projects/supply-chain-security](https://github.com/shisaai/supply-chain-security) for the full org standard and per-repo audit templates.
+
 ## Pi coding agent
 
 The `pi` stow package tracks:
