@@ -1,2 +1,86 @@
+# Dotfiles repo hygiene: track portable config, not generated state.
+
+# Generic local/editor/runtime noise
+.DS_Store
+Thumbs.db
+*~
+*.bak
+*.bak.*
+*.backup
+*.backup.*
+*.tmp
+*.log
+*.pid
+*.sock
+*.swp
+*.swo
+node_modules/
+**/node_modules/
+
+# Common generated state directories
+**/.cache/
+**/cache/
+**/Cache/
+**/logs/
+**/Backups/
+**/Crashpad/
+
+# tmux plugins are installed locally; keep only TPM itself if present
 tmux/.config/tmux/plugins/*
-!tmux/.config/tmux/plugins/tpm/*
+!tmux/.config/tmux/plugins/tpm/
+!tmux/.config/tmux/plugins/tpm/**
+
+# VS Code / Code — keep only portable user-authored settings/snippets
+Code/.config/Code/**
+!Code/.config/Code/
+!Code/.config/Code/User/
+!Code/.config/Code/User/settings.json
+!Code/.config/Code/User/keybindings.json
+!Code/.config/Code/User/snippets/
+!Code/.config/Code/User/snippets/**
+
+# Claude — keep portable instructions and custom skill definitions only
+claude/.claude/**
+!claude/.claude/
+!claude/.claude/skills/
+!claude/.claude/skills/lecture-notes-to-anki/
+!claude/.claude/skills/lecture-notes-to-anki/SKILL.md
+!claude/.claude/skills/summarizing-lecture-notes/
+!claude/.claude/skills/summarizing-lecture-notes/SKILL.md
+!claude/.claude/settings.permissions.json
+!claude/.claude/settings.json.example
+!claude/.claude/settings.shared.json
+claude/.claude/settings.json
+claude/.claude/settings.local.json
+claude/.claude/history.jsonl
+claude/.claude/mcp-needs-auth-cache.json
+claude/.claude/projects/
+claude/.claude/sessions/
+claude/.claude/session-env/
+claude/.claude/tasks/
+claude/.claude/file-history/
+claude/.claude/shell-snapshots/
+claude/.claude/backups/
+claude/.claude/cache/
+claude/.claude/plugins/
+claude/.claude/hooks/**/.state.json
+claude/.claude/hooks/**/*.log
+claude/.claude/hooks/**/.last_update_check
+claude/.claude/hooks/**/.update_available
+
+# opencode — keep config/lockfiles, not installed dependencies or runtime state
+opencode/.config/opencode/node_modules/
+opencode/.config/opencode/.cache/
+opencode/.config/opencode/cache/
+opencode/.config/opencode/logs/
+opencode/.config/opencode/sessions/
+opencode/.config/opencode/projects/
+
+# pi — never track auth, session state, installed package caches, or audit logs
+pi/.pi/agent/auth.json
+pi/.pi/agent/models.json
+pi/.pi/agent/sessions/
+pi/.pi/agent/git/
+pi/.pi/agent/npm/
+pi/.pi/agent/vstack/
+pi/.pi/agent/security/audit*.jsonl*

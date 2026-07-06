@@ -1,6 +1,0 @@
-2026-06-01 16:43:00.242 [info] Getting Manifest... vscodevim.vim
-2026-06-01 16:43:00.393 [info] Installing extension: vscodevim.vim {"isMachineScoped":false,"installPreReleaseVersion":false,"pinned":false,"profileLocation":{"$mid":1,"external":"vscode-userdata:/home/bacen/.vscode/extensions/extensions.json","path":"/home/bacen/.vscode/extensions/extensions.json","scheme":"vscode-userdata"},"isBuiltin":false,"isApplicationScoped":false,"productVersion":{"version":"1.122.0","date":"2026-05-27T14:03:01-07:00"}}
-2026-06-01 16:43:02.318 [info] Extension signature verification result for vscodevim.vim: Success. Internal Code: 0. Executed: true. Duration: 1306ms.
-2026-06-01 16:43:02.405 [info] Extracted extension to file:///home/bacen/.vscode/extensions/vscodevim.vim-1.32.4: vscodevim.vim
-2026-06-01 16:43:02.413 [info] Renamed to /home/bacen/.vscode/extensions/vscodevim.vim-1.32.4
-2026-06-01 16:43:02.436 [info] Extension installed successfully: vscodevim.vim vscode-userdata:/home/bacen/.vscode/extensions/extensions.json
