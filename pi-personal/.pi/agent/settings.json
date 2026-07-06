@@ -1,0 +1,28 @@
+{
+  "lastChangelogVersion": "0.80.2",
+  "theme": "dark",
+  "packages": [
+    "npm:pi-web-access@0.10.7",
+    "npm:@the-forge-flow/camoufox-pi@0.2.1",
+    "npm:pi-code-previews@0.1.32",
+    "npm:pi-context-prune@1.2.0",
+    "npm:pi-multiloop@0.3.2",
+    "npm:pi-codex-status@0.1.0",
+    "npm:@sting8k/pi-vcc@0.3.17",
+    "https://github.com/lhl/pi-continue-after-compaction@45a6e3d727204f4cf26295461b9463477c2c7fe5",
+    "npm:pi-schedule-prompt@0.4.0",
+    "npm:@vanillagreen/pi-background-tasks@1.6.0",
+    "npm:pi-boomerang@0.6.6",
+    "npm:pi-smart-fetch@0.3.12",
+    "git:github.com/mwolff44/pi-secured-setup@v1.0.3",
+    "npm:pi-vimmode@0.2.0",
+    "npm:pi-peon-ping"
+  ],
+  "defaultProvider": "codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "high",
+  "defaultProjectTrust": "ask",
+  "enableInstallTelemetry": false,
+  "enableAnalytics": false,
+  "hideThinkingBlock": false
+}

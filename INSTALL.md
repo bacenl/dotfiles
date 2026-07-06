@@ -158,27 +158,38 @@ See [~/Projects/supply-chain-security](https://github.com/shisaai/supply-chain-s
 
 ## Pi coding agent
 
-The `pi` stow package tracks:
+There are two Pi setup entry points:
 
-- `~/.pi/agent/settings.json` — packages list, default model/provider, and preferences
-- `~/.pi/agent/models.json` — custom Bedrock/Anthropic model definitions
+```bash
+./setup.sh --profile devcontainer
+./setup.sh --profile personal
+```
+
+The shared `pi` stow package tracks:
+
+- `~/.pi/agent/keybindings.json` — local TUI keybindings
+- `~/.pi/agent/pi-vcc-config.json` — pi-vcc extension preferences
 - `~/.pi/agent/extensions/` — custom extensions (clear-on-ctrl-c, custom-status-footer, omarchy-system-theme)
-- `~/.pi/agent/skills/omarchy/` — omarchy skill
+- `~/.pi/agent/skills/` — local skills (omarchy, braindump)
+- `~/.pi/agent/security/*.json` — pi-secured-setup guard configuration and skill approvals
+- `~/.pi/agent/patches/` — local package patches reapplied by setup
+
+Profile-specific settings are split so the package list differs by entry point:
+
+- `pi-personal/.pi/agent/settings.json` includes `git:github.com/mwolff44/pi-secured-setup@v1.0.3`; setup reapplies the peon approval-sound patch after installing packages.
+- `pi-devcontainer/.pi/agent/settings.json` omits `pi-secured-setup`; setup also skips local security patches for this profile.
 
 These are intentionally **not** tracked:
 
 - `auth.json` — API keys and OAuth tokens (set these after install)
+- `models.json` — custom providers may contain API keys or bearer tokens; recreate locally or use `$ENV_VAR` placeholders
 - `sessions/` — conversation history
 - `git/`, `npm/` — installed package caches (reinstalled by setup)
-- `security/`, `vstack/`, `pi-vcc-config.json` — runtime state
+- `security/audit*.jsonl*` — local security audit logs
+- `vstack/` — runtime state
 
-The personal profile `setup.sh` stows the `pi` package and then runs
-`pi install` for every package listed in `settings.json`. Pi itself must be
-installed separately before setup runs:
-
-```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
-```
-
-After `setup.sh` completes, set credentials via `/login` or by exporting the
-relevant API key environment variable before starting pi.
+Both profiles install the pi CLI if needed and run `pi install` for every package
+listed in the active profile's `settings.json`. After setup completes, set
+credentials via `/login` or by exporting the relevant API key environment
+variable before starting pi. Peon sound packs are not tracked; install them
+interactively with `/peon install` if needed.

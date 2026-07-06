@@ -17,10 +17,11 @@ NVIM_VERSION="${NVIM_VERSION:-0.11.0}"
 # ──────────────────────────────────────────────
 usage() {
   cat <<EOF
-Usage: setup.sh --profile <container|personal> [OPTIONS]
+Usage: setup.sh --profile <devcontainer|personal> [OPTIONS]
 
 Options:
-  --profile <container|personal>   Required. Which profile to install.
+  --profile <devcontainer|personal> Required. Which profile to install.
+                                  Alias: container = devcontainer.
   --omarchy                        (personal only) Stow omarchy + hypr + waybar.
   --hypr                           (personal only) Stow hypr + waybar only.
   --bootstrap <curl|git>           How to clone dotfiles. Default: curl.
@@ -57,8 +58,12 @@ if [ -z "$PROFILE" ]; then
   exit 1
 fi
 
-if [ "$PROFILE" != "container" ] && [ "$PROFILE" != "personal" ]; then
-  echo "[error] --profile must be 'container' or 'personal'" >&2
+if [ "$PROFILE" = "container" ]; then
+  PROFILE="devcontainer"
+fi
+
+if [ "$PROFILE" != "devcontainer" ] && [ "$PROFILE" != "personal" ]; then
+  echo "[error] --profile must be 'devcontainer' or 'personal'" >&2
   exit 1
 fi
 
@@ -183,11 +188,13 @@ main() {
   source "$DOTFILES_DIR/scripts/install/pkgs.sh"
   # shellcheck source=scripts/install/nvim.sh
   source "$DOTFILES_DIR/scripts/install/nvim.sh"
+  # shellcheck source=scripts/install/pi.sh
+  source "$DOTFILES_DIR/scripts/install/pi.sh"
   # shellcheck source=scripts/stow.sh
   source "$DOTFILES_DIR/scripts/stow.sh"
 
   case "$PROFILE" in
-    container)
+    devcontainer)
       # shellcheck source=scripts/profile/container.sh
       source "$DOTFILES_DIR/scripts/profile/container.sh"
       run_container_profile "$DOTFILES_DIR"

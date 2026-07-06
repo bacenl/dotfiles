@@ -18,7 +18,7 @@ run_personal_profile() {
 
   install_nvim
 
-  local pkgs=(tmux fzf ripgrep bat zoxide fish kitty node python go gcc gh)
+  local pkgs=(tmux fzf ripgrep bat zoxide fish kitty node npm python go gcc gh)
   for pkg in "${pkgs[@]}"; do
     install_pkg "$pkg"
   done
@@ -29,7 +29,7 @@ run_personal_profile() {
   echo ""
   echo "==> [personal] Stowing configs"
 
-  local stow_targets=(nvim tmux fish kitty scripts claude ssh)
+  local stow_targets=(nvim tmux fish kitty scripts claude ssh pi npm)
   for target in "${stow_targets[@]}"; do
     do_stow "$target" "$dotfiles_dir"
   done
@@ -88,6 +88,11 @@ CAPS2ESC
   echo "==> [personal] Setting up tmux plugins"
   setup_tmux_plugins
   reload_tmux_config
+
+  echo ""
+  echo "==> [personal] Installing pi packages"
+  select_pi_settings_profile "$dotfiles_dir" personal
+  install_pi_packages "$dotfiles_dir" personal
 
   echo ""
   echo "==> [personal] Enabling ssh-agent user socket"

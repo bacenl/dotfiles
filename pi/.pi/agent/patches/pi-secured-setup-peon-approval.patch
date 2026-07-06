@@ -1,0 +1,49 @@
+diff --git i/lib/guard-pipeline.ts w/lib/guard-pipeline.ts
+index 4ef26ac..cd8f8d5 100644
+--- i/lib/guard-pipeline.ts
++++ w/lib/guard-pipeline.ts
+@@ -18,10 +18,20 @@ import { evaluateProtectedPaths } from "./protected-paths.js";
+ import { classifyCommand } from "./bash-gate.js";
+ import { auditLog, type AuditSeverity } from "./audit.js";
+ import { redactString } from "./secret-scanner.js";
++import { playCategorySound } from "../../../../../npm/node_modules/pi-peon-ping/src/audio";
++import { loadConfig as loadPeonConfig, loadState as loadPeonState } from "../../../../../npm/node_modules/pi-peon-ping/src/config";
+ 
+ /**
+  * The audit event type prefix and severity for each verdict.
+  */
++function playApprovalPromptSound(): void {
++	try {
++		playCategorySound("input.required", loadPeonConfig(), loadPeonState());
++	} catch {
++		// Approval prompts must still work if peon-ping is disabled or unavailable.
++	}
++}
++
+ export function verdictAuditInfo(
+ 	guard: string,
+ 	verdict: GuardVerdict & { category?: string },
+@@ -102,6 +112,7 @@ export function registerGuardPipeline(
+ 				return { block: true, reason: boundaryVerdict.message };
+ 			}
+ 
++			playApprovalPromptSound();
+ 			const approved = await ctx.ui.confirm("🔒 Boundary Check", boundaryVerdict.message);
+ 			if (!approved) {
+ 				auditLog("boundary.block", "warning", {
+@@ -147,6 +158,7 @@ export function registerGuardPipeline(
+ 				return { block: true, reason: protectedVerdict.message };
+ 			}
+ 
++			playApprovalPromptSound();
+ 			const approved = await ctx.ui.confirm("🔒 Protected Path", protectedVerdict.message);
+ 			if (!approved) {
+ 				auditLog("protected.block", "warning", {
+@@ -195,6 +207,7 @@ export function registerGuardPipeline(
+ 					return { block: true, reason: `${category.charAt(0).toUpperCase() + category.slice(1)} command blocked (no UI)` };
+ 				}
+ 
++				playApprovalPromptSound();
+ 				const approved = await ctx.ui.confirm("🔒 Bash Command", bashVerdict.message);
+ 				const category = bashVerdict.category ?? "unknown";
+ 
