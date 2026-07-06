@@ -37,6 +37,54 @@ do_stow() {
     done <<< "$adopted"
     echo "       review and commit or remove them manually"
   fi
+
+  if [ "$pkg" = "claude" ]; then
+    enforce_claude_permissions "$dotfiles_dir"
+  fi
+}
+
+# enforce_claude_permissions <dotfiles_dir>
+# Keeps ~/.claude/settings.json local/ignored, but applies the tracked portable
+# permission policy after stowing Claude config.
+enforce_claude_permissions() {
+  local dotfiles_dir="$1"
+  local policy_file="$dotfiles_dir/claude/.claude/settings.permissions.json"
+  local settings_file="$HOME/.claude/settings.json"
+
+  if [ ! -f "$policy_file" ]; then
+    echo "[skip] claude permissions: no policy file at $policy_file"
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$settings_file")"
+
+  POLICY_FILE="$policy_file" SETTINGS_FILE="$settings_file" python3 <<'PY'
+import json
+import os
+from pathlib import Path
+
+policy_path = Path(os.environ["POLICY_FILE"])
+settings_path = Path(os.environ["SETTINGS_FILE"])
+
+with policy_path.open() as f:
+    policy = json.load(f)
+
+if settings_path.exists():
+    with settings_path.open() as f:
+        settings = json.load(f)
+else:
+    settings = {}
+
+settings["permissions"] = policy["permissions"]
+
+new_text = json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
+old_text = settings_path.read_text() if settings_path.exists() else None
+if old_text != new_text:
+    settings_path.write_text(new_text)
+    print(f"[sync] claude permissions -> {settings_path}")
+else:
+    print(f"[skip] claude permissions already current: {settings_path}")
+PY
 }
 
 # setup_tmux_plugins
