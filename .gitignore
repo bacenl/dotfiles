@@ -25,6 +25,10 @@ node_modules/
 **/Backups/
 **/Crashpad/
 
+
+# Fish universal variables are local runtime state and may contain secrets
+fish/.config/fish/fish_variables
+
 # tmux plugins are installed locally; keep only TPM itself if present
 tmux/.config/tmux/plugins/*
 !tmux/.config/tmux/plugins/tpm/
@@ -84,3 +88,4 @@ pi/.pi/agent/git/
 pi/.pi/agent/npm/
 pi/.pi/agent/vstack/
 pi/.pi/agent/security/audit*.jsonl*
+pi/.pi/agent/security/skill-approvals.json
