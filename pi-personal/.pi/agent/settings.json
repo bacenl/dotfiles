@@ -15,7 +15,7 @@
     "npm:pi-boomerang@0.6.6",
     "npm:pi-smart-fetch@0.3.12",
     "git:github.com/mwolff44/pi-secured-setup@v1.0.3",
-    "npm:pi-vimmode@0.8.0",
+    "git:github.com/pekochan069/pi-vimmode@v0.8.0",
     "npm:pi-peon-ping"
   ],
   "defaultProvider": "codex",

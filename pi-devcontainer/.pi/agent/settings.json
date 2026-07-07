@@ -14,7 +14,7 @@
     "npm:@vanillagreen/pi-background-tasks@1.6.0",
     "npm:pi-boomerang@0.6.6",
     "npm:pi-smart-fetch@0.3.12",
-    "npm:pi-vimmode@0.8.0",
+    "git:github.com/pekochan069/pi-vimmode@v0.8.0",
     "npm:pi-peon-ping"
   ],
   "defaultProvider": "codex",
