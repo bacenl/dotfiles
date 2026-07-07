@@ -169,7 +169,7 @@ The shared `pi` stow package tracks:
 
 - `~/.pi/agent/keybindings.json` — local TUI keybindings
 - `~/.pi/agent/pi-vcc-config.json` — pi-vcc extension preferences
-- `~/.pi/agent/extensions/` — custom extensions (clear-on-ctrl-c, custom-status-footer, omarchy-system-theme)
+- `~/.pi/agent/extensions/` — custom extensions (clear-on-ctrl-c, custom-status-footer, omarchy-system-theme, toggle-security)
 - `~/.pi/agent/skills/` — local skills (omarchy, braindump)
 - `~/.pi/agent/security/*.json` — pi-secured-setup guard configuration and skill approvals
 - `~/.pi/agent/patches/` — local package patches reapplied by setup
@@ -178,6 +178,7 @@ Profile-specific settings are split so the package list differs by entry point:
 
 - `pi-personal/.pi/agent/settings.json` includes `git:github.com/mwolff44/pi-secured-setup@v1.0.3`; setup reapplies the peon approval-sound patch after installing packages.
 - `pi-devcontainer/.pi/agent/settings.json` omits `pi-secured-setup`; setup also skips local security patches for this profile.
+- `/toggle-security [on|off|status]` switches `~/.pi/agent/settings.json` between the personal profile and a generated security-off profile, then reloads Pi.
 
 These are intentionally **not** tracked:
 
