@@ -102,7 +102,6 @@ pi-personal/.pi/agent/git/
 pi-personal/.pi/agent/npm/
 pi-personal/.pi/agent/vstack/
 pi-personal/.pi/agent/security/
-pi-personal/.pi/agent/pi_daily_capture/
 
 # pi-personal-tools — portable tool configs are tracked; runtime state is not
 pi-personal-tools/.pi/agent/settings.json
