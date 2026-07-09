@@ -24,6 +24,9 @@ node_modules/
 **/logs/
 **/Backups/
 **/Crashpad/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
 
 
 # Fish universal variables are local runtime state and may contain secrets
@@ -89,3 +92,27 @@ pi/.pi/agent/npm/
 pi/.pi/agent/vstack/
 pi/.pi/agent/security/audit*.jsonl*
 pi/.pi/agent/security/skill-approvals.json
+
+# pi-personal — personal-machine-only tools; stow creates the symlinks
+pi-personal/.pi/agent/settings.json
+pi-personal/.pi/agent/auth.json
+pi-personal/.pi/agent/models.json
+pi-personal/.pi/agent/sessions/
+pi-personal/.pi/agent/git/
+pi-personal/.pi/agent/npm/
+pi-personal/.pi/agent/vstack/
+pi-personal/.pi/agent/security/
+pi-personal/.pi/agent/pi_daily_capture/
+
+# pi-personal-tools — portable tool configs are tracked; runtime state is not
+pi-personal-tools/.pi/agent/settings.json
+pi-personal-tools/.pi/agent/auth.json
+pi-personal-tools/.pi/agent/models.json
+pi-personal-tools/.pi/agent/sessions/
+pi-personal-tools/.pi/agent/git/
+pi-personal-tools/.pi/agent/npm/
+pi-personal-tools/.pi/agent/vstack/
+pi-personal-tools/.pi/agent/security/
+
+# pi-devcontainer — container-only settings; no personal tooling
+pi-devcontainer/.pi/agent/settings.json

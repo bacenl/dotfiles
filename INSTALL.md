@@ -177,7 +177,8 @@ The shared `pi` stow package tracks:
 Profile-specific settings are split so the package list differs by entry point:
 
 - `pi-personal/.pi/agent/settings.json` includes `git:github.com/mwolff44/pi-secured-setup@v1.0.3`; setup reapplies the peon approval-sound patch after installing packages.
-- `pi-devcontainer/.pi/agent/settings.json` omits `pi-secured-setup`; setup also skips local security patches for this profile.
+- `pi-personal-tools/.pi/agent/pi_daily_capture/` installs the personal-computer-only internship learning capture workflow. Run it with `python ~/.pi/agent/pi_daily_capture/capture.py`; it writes only to `/home/ubuntu/obsidian/internship/braindump/week_N/YYYY-MM-DD/pi-capture.md`.
+- `pi-devcontainer/.pi/agent/settings.json` omits `pi-secured-setup`; setup also skips local security patches for this profile. Devcontainer setup does not stow `pi-personal-tools`.
 - `/toggle-security [on|off|status]` switches `~/.pi/agent/settings.json` between the personal profile and a generated security-off profile, then reloads Pi.
 
 These are intentionally **not** tracked:

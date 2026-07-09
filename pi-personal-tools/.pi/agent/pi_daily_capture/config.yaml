@@ -1,0 +1,45 @@
+# pi-coding-agent daily internship learning capture
+# Installed only by the personal profile, not by devcontainer setup.
+
+timezone: Asia/Tokyo
+internship_root: /home/ubuntu/obsidian/internship
+week_1_monday: 2026-06-01
+
+# Repo roots may be explicit Git repositories or parent directories containing repos.
+# Missing paths are reported as skipped so the same config can be shared across machines.
+repos:
+  - ~/Projects
+  - ~/work
+  - ~/shisa
+  - /home/ubuntu/Projects
+  - /home/ubuntu/work
+  - /home/ubuntu/shisa
+
+note_roots:
+  - /home/ubuntu/obsidian/internship
+
+exclude_paths:
+  - .git
+  - node_modules
+  - .venv
+  - venv
+  - __pycache__
+  - .mypy_cache
+  - .pytest_cache
+  - .ruff_cache
+  - dist
+  - build
+  - target
+  - .next
+  - .cache
+  - cache
+  - logs
+
+max_excerpt_chars: 500
+max_diff_lines: 80
+max_repos_discovered: 200
+max_files_per_repo: 80
+max_notes: 120
+
+# Keep this workflow off disposable/devcontainer environments by default.
+skip_in_devcontainer: true
