@@ -28,6 +28,41 @@ For a dry historical check of a specific Tokyo date:
 python ~/.pi/agent/pi_daily_capture/capture.py --date 2026-07-09
 ```
 
+## Automated schedule (systemd timer)
+
+The personal profile bootstrap installs a systemd user timer that runs the capture daily at **23:00 JST** — 30 minutes before Hermes ingestion at 23:30 JST.
+
+```text
+~/.config/systemd/user/pi-daily-capture.timer
+~/.config/systemd/user/pi-daily-capture.service
+```
+
+### Why 23:00 JST?
+
+Hermes ingests the capture notes at 23:30 JST. The capture runs at 23:00 to ensure the file is written and flushed before Hermes picks it up. This gives a 30-minute buffer for any slow I/O or git operations.
+
+### Checking status
+
+```bash
+# See next trigger time and recent runs
+systemctl --user status pi-daily-capture.timer
+
+# View the timer's log output
+cat ~/.pi/agent/pi_daily_capture/cron.log
+
+# Force an immediate run for testing
+systemctl --user start pi-daily-capture.service
+```
+
+### Troubleshooting
+
+If the capture isn't running:
+
+1. **Timer not active:** `systemctl --user enable --now pi-daily-capture.timer`
+2. **Stow not done:** The timer references `~/.pi/agent/pi_daily_capture/capture.py` which is created by stowing `pi-personal-tools`. Run `./setup.sh --profile personal` if the symlink is missing.
+3. **Log errors:** Check `~/.pi/agent/pi_daily_capture/cron.log` for Python tracebacks or missing paths.
+4. **Missing paths:** The `config.yaml` repo/note roots that don't exist on your machine are reported as "skipped" — this is normal and expected.
+
 ## Configuration
 
 Edit `~/.pi/agent/pi_daily_capture/config.yaml` (tracked in dotfiles) to add machine-specific repo roots or note folders. Missing roots are reported under "Sources skipped / unavailable" so one shared config can work across multiple personal computers.

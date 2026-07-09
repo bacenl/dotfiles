@@ -43,6 +43,40 @@ run_personal_profile() {
     echo "[skip] stow: yazi not installed on $OS"
   fi
 
+  # ── pi daily capture timer (23:00 JST, before Hermes ingest at 23:30) ──
+  echo ""
+  echo "==> [personal] Setting up pi daily capture timer"
+  local timer_dir="$HOME/.config/systemd/user"
+  mkdir -p "$timer_dir"
+
+  cat > "$timer_dir/pi-daily-capture.timer" <<'TIMER'
+[Unit]
+Description=Daily pi internship capture at 23:00 JST
+
+[Timer]
+OnCalendar=*-*-* 23:00:00
+Persistent=true
+TIMER
+
+  cat > "$timer_dir/pi-daily-capture.service" <<'SERVICE'
+[Unit]
+Description=pi daily internship capture
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/ethan/.pi/agent/pi_daily_capture/capture.py
+StandardOutput=append:/home/ethan/.pi/agent/pi_daily_capture/cron.log
+StandardError=append:/home/ethan/.pi/agent/pi_daily_capture/cron.log
+SERVICE
+
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl --user daemon-reload
+    systemctl --user enable --now pi-daily-capture.timer
+    echo "[timer] pi-daily-capture.timer enabled (23:00 JST)"
+  else
+    echo "[warn] systemctl not available; timer files written to $timer_dir"
+  fi
+
   # Desktop environment setup (stow configs + omarchy-specific installs)
   case "$desktop_flag" in
     omarchy)
