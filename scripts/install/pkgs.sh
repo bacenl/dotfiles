@@ -26,7 +26,7 @@ detect_os() {
 
 OS=$(detect_os)
 
-# Run a command with sudo only when not already root.
+# Run a command with sudo only when not root.
 _sudo() {
   if [ "$(id -u)" = "0" ]; then
     "$@"
@@ -72,6 +72,28 @@ resolve_pkg_name() {
   esac
 }
 
+# _install_github_deb <tool>
+# Resolves the latest amd64 .deb for a GitHub release and installs it.
+_install_github_deb() {
+  local tool="$1" repo="$2"
+  local release_json
+  release_json=$(curl -fsSL "https://api.github.com/repos/${repo}/releases/latest")
+  local download_url
+  download_url=$(echo "$release_json" \
+    | grep -o '"browser_download_url": "[^"]*amd64.deb"' \
+    | grep -v musl \
+    | head -1 \
+    | sed 's/.*: "\(.*\)"/\1/')
+  if [ -z "$download_url" ]; then
+    echo "[error] could not resolve $tool release URL" >&2
+    return 1
+  fi
+  echo "[install] $tool from GitHub ($download_url)"
+  local tmpdeb
+  tmpdeb=$(mktemp /tmp/pkg-XXXXXX.deb)
+  curl -fsSL "$download_url" -o "$tmpdeb" && _sudo dpkg -i "$tmpdeb" && rm -f "$tmpdeb"
+}
+
 # install_pkg <logical-name>
 # Resolves and installs the package for the current $OS.
 install_pkg() {
@@ -93,11 +115,7 @@ install_pkg() {
     debian)
       if [[ "$pkg" == __github__* ]]; then
         local tool="${pkg#__github__}"
-        local url="https://github.com/sharkdp/${tool}/releases/latest/download/${tool}_x86_64.deb"
-        echo "[install] $name from GitHub ($url)"
-        local tmpdeb
-        tmpdeb=$(mktemp /tmp/bat-XXXXXX.deb)
-        curl -fsSL "$url" -o "$tmpdeb" && _sudo dpkg -i "$tmpdeb" && rm -f "$tmpdeb"
+        _install_github_deb "$tool" "sharkdp/${tool}"
       else
         _sudo apt-get install -y "$pkg"
       fi
