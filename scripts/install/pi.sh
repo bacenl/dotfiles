@@ -3,6 +3,7 @@ set -euo pipefail
 
 # install_pi_cli
 # Installs pi when it is missing. Requires node/npm to already be available.
+# Warns on failure but does not abort.
 install_pi_cli() {
   if command -v pi >/dev/null 2>&1; then
     echo "[skip] pi CLI already installed"
@@ -15,7 +16,10 @@ install_pi_cli() {
   fi
 
   echo "[install] pi CLI"
-  npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+  if ! npm install -g --ignore-scripts @earendil-works/pi-coding-agent; then
+    echo "[warn] pi CLI install failed" >&2
+    return 0
+  fi
 }
 
 
@@ -39,6 +43,7 @@ select_pi_settings_profile() {
 
 # install_pi_packages <dotfiles_dir> [personal|devcontainer]
 # Reconciles the pi package list recorded in ~/.pi/agent/settings.json.
+# Individual plugin failures are non-fatal.
 install_pi_packages() {
   local dotfiles_dir="$1"
   local profile="${2:-personal}"
@@ -82,7 +87,7 @@ install_pi_packages() {
 apply_pi_local_patches() {
   local dotfiles_dir="$1"
   local security_pkg="$HOME/.pi/agent/git/github.com/mwolff44/pi-secured-setup"
-  local patch="$dotfiles_dir/pi/.pi/agent/patches/pi-secured-setup-peon-approval.patch"
+  local patch="$dotfiles_dir/pi-personal/.pi/agent/patches/pi-secured-setup-peon-approval.patch"
   local target="$security_pkg/lib/guard-pipeline.ts"
 
   if [ ! -d "$security_pkg/.git" ]; then

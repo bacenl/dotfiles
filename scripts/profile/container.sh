@@ -4,6 +4,16 @@ set -euo pipefail
 # Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins
 # already defined (sourced by setup.sh before calling this).
 
+# _step <label> <command...>
+# Runs a non-critical step, warning on failure without aborting.
+_step() {
+  local label="$1"; shift
+  if ! "$@"; then
+    echo "[warn] $label failed — continuing" >&2
+    return 0
+  fi
+}
+
 run_container_profile() {
   local dotfiles_dir="$1"
 
@@ -23,29 +33,28 @@ run_container_profile() {
   echo ""
   echo "==> [container] Stowing configs"
 
-  do_stow nvim            "$dotfiles_dir"
-  do_stow tmux            "$dotfiles_dir"
-  do_stow claude          "$dotfiles_dir"
-  do_stow pi              "$dotfiles_dir"
-  do_stow npm             "$dotfiles_dir"
+  local stow_targets=(nvim tmux claude pi npm)
+  for target in "${stow_targets[@]}"; do
+    _step "stow $target" do_stow "$target" "$dotfiles_dir"
+  done
 
   # Only stow yazi if it was installed (not skipped)
   local yazi_pkg
   yazi_pkg=$(resolve_pkg_name yazi "$OS")
   if [ -n "$yazi_pkg" ]; then
-    do_stow yazi "$dotfiles_dir"
+    _step "stow yazi" do_stow yazi "$dotfiles_dir"
   else
     echo "[skip] stow: yazi not installed on $OS"
   fi
 
   echo ""
   echo "==> [container] Setting up tmux plugins"
-  setup_tmux_plugins
+  _step "tmux plugins" setup_tmux_plugins
 
   echo ""
   echo "==> [container] Installing pi packages"
-  select_pi_settings_profile "$dotfiles_dir" devcontainer
-  install_pi_packages "$dotfiles_dir" devcontainer
+  _step "pi settings profile" select_pi_settings_profile "$dotfiles_dir" devcontainer
+  _step "pi packages" install_pi_packages "$dotfiles_dir" devcontainer
 
   echo ""
   echo "[done] container profile complete"

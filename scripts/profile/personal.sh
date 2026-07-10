@@ -9,6 +9,16 @@ set -euo pipefail
 #   $1 - dotfiles_dir
 #   $2 - desktop flag: "omarchy" | "hypr" | ""
 
+# _step <label> <command...>
+# Runs a non-critical step, warning on failure without aborting.
+_step() {
+  local label="$1"; shift
+  if ! "$@"; then
+    echo "[warn] $label failed — continuing" >&2
+    return 0
+  fi
+}
+
 run_personal_profile() {
   local dotfiles_dir="$1"
   local desktop_flag="${2:-}"
@@ -31,14 +41,14 @@ run_personal_profile() {
 
   local stow_targets=(nvim tmux fish kitty scripts claude ssh pi pi-personal-tools npm)
   for target in "${stow_targets[@]}"; do
-    do_stow "$target" "$dotfiles_dir"
+    _step "stow $target" do_stow "$target" "$dotfiles_dir"
   done
 
   # stow yazi only if it was installed
   local yazi_pkg
   yazi_pkg=$(resolve_pkg_name yazi "$OS")
   if [ -n "$yazi_pkg" ]; then
-    do_stow yazi "$dotfiles_dir"
+    _step "stow yazi" do_stow yazi "$dotfiles_dir"
   else
     echo "[skip] stow: yazi not installed on $OS"
   fi
@@ -71,7 +81,8 @@ SERVICE
 
   if command -v systemctl >/dev/null 2>&1; then
     systemctl --user daemon-reload
-    systemctl --user enable --now pi-daily-capture.timer
+    systemctl --user enable --now pi-daily-capture.timer 2>/dev/null \
+      || echo "[warn] pi-daily-capture.timer could not be enabled" >&2
     echo "[timer] pi-daily-capture.timer enabled (23:00 JST)"
   else
     echo "[warn] systemctl not available; timer files written to $timer_dir"
@@ -82,16 +93,18 @@ SERVICE
     omarchy)
       echo ""
       echo "==> [personal] Stowing omarchy desktop configs"
-      do_stow omarchy "$dotfiles_dir"
-      do_stow hypr    "$dotfiles_dir"
-      do_stow waybar  "$dotfiles_dir"
+      _step "stow omarchy" do_stow omarchy "$dotfiles_dir"
+      _step "stow hypr" do_stow hypr    "$dotfiles_dir"
+      _step "stow waybar" do_stow waybar  "$dotfiles_dir"
 
       echo ""
       echo "==> [personal] Installing desktop applications"
       install_pkg vivaldi
       install_pkg syncthing
-      systemctl --user enable --now syncthing.service
-      omarchy default terminal kitty || echo "[warn] Kitty was installed but could not be selected automatically"
+      systemctl --user enable --now syncthing.service 2>/dev/null \
+        || echo "[warn] syncthing service could not be enabled" >&2
+      omarchy default terminal kitty 2>/dev/null \
+        || echo "[warn] Kitty was installed but could not be selected automatically"
 
       echo ""
       echo "==> [personal] Installing interception tools (caps2esc)"
@@ -107,32 +120,44 @@ SERVICE
       EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
 CAPS2ESC
       fi
-      sudo systemctl enable --now udevmon.service
+      sudo systemctl enable --now udevmon.service 2>/dev/null \
+        || echo "[warn] udevmon service could not be enabled" >&2
 
       ;;
     hypr)
       echo ""
       echo "==> [personal] Stowing hyprland configs"
-      do_stow hypr   "$dotfiles_dir"
-      do_stow waybar "$dotfiles_dir"
+      _step "stow hypr" do_stow hypr   "$dotfiles_dir"
+      _step "stow waybar" do_stow waybar "$dotfiles_dir"
       ;;
   esac
 
   echo ""
   echo "==> [personal] Setting up tmux plugins"
-  setup_tmux_plugins
+  _step "tmux plugins" setup_tmux_plugins
   reload_tmux_config
 
   echo ""
   echo "==> [personal] Installing pi packages"
-  select_pi_settings_profile "$dotfiles_dir" personal
-  install_pi_packages "$dotfiles_dir" personal
+  _step "pi settings profile" select_pi_settings_profile "$dotfiles_dir" personal
+  _step "pi packages" install_pi_packages "$dotfiles_dir" personal
+
+  # Copy security configs from pi-personal to ~/.pi/agent/security/
+  # (pi-personal is not stowed — it lives alongside pi/ for settings.json)
+  local security_src="$dotfiles_dir/pi-personal/.pi/agent/security"
+  local security_dest="$HOME/.pi/agent/security"
+  if [ -d "$security_src" ]; then
+    mkdir -p "$security_dest"
+    cp -n "$security_src"/*.json "$security_dest/"
+    echo "[sync] pi security configs -> $security_dest"
+  fi
 
   echo ""
   echo "==> [personal] Enabling ssh-agent user socket"
   if command -v systemctl >/dev/null 2>&1 &&
      systemctl --user cat ssh-agent.socket >/dev/null 2>&1; then
-    systemctl --user enable --now ssh-agent.socket
+    systemctl --user enable --now ssh-agent.socket 2>/dev/null \
+      || echo "[warn] ssh-agent.socket could not be enabled" >&2
   else
     echo "[skip] ssh-agent socket: packaged user unit unavailable"
   fi
@@ -158,10 +183,12 @@ CAPS2ESC
     install_pkg nm-connection-editor
     sudo systemctl stop iwd systemd-networkd 2>/dev/null || true
     sudo systemctl disable iwd systemd-networkd 2>/dev/null || true
-    sudo systemctl enable --now NetworkManager
+    sudo systemctl enable --now NetworkManager 2>/dev/null \
+      || echo "[warn] NetworkManager could not be enabled" >&2
 
     if command -v yay &>/dev/null; then
-      yay -S --noconfirm gazelle-tui
+      yay -S --noconfirm gazelle-tui 2>/dev/null \
+        || echo "[warn] gazelle-tui could not be installed" >&2
     fi
   fi
 

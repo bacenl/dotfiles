@@ -7,23 +7,22 @@ NVIM_VERSION="${NVIM_VERSION:-0.11.0}"
 
 install_nvim() {
   echo "[install] neovim $NVIM_VERSION on $OS"
+  local ok=0
   case "$OS" in
     arch)
-      _sudo pacman -S --noconfirm --needed neovim
+      _sudo pacman -S --noconfirm --needed neovim || ok=1
       ;;
     macos)
-      brew install neovim
+      brew install neovim || ok=1
       ;;
     fedora)
-      _sudo dnf install -y neovim
+      _sudo dnf install -y neovim || ok=1
       ;;
     alpine)
-      _sudo apk add --no-cache neovim
+      _sudo apk add --no-cache neovim || ok=1
       local installed_ver
       installed_ver=$(nvim --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+' || true)
-      if [ -z "$installed_ver" ]; then
-        echo "[warn] Could not determine installed neovim version." >&2
-      else
+      if [ -n "$installed_ver" ]; then
         local major minor
         major=$(echo "$installed_ver" | cut -d. -f1)
         minor=$(echo "$installed_ver" | cut -d. -f2)
@@ -33,13 +32,18 @@ install_nvim() {
       fi
       ;;
     debian)
-      ( _install_nvim_debian )
+      ( _install_nvim_debian ) || ok=1
       ;;
     *)
       echo "[error] unsupported OS for neovim install: $OS" >&2
       return 1
       ;;
   esac
+
+  if [ "$ok" -ne 0 ]; then
+    echo "[warn] neovim install failed — continuing" >&2
+    return 0
+  fi
 }
 
 _install_nvim_debian() {

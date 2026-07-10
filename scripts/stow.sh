@@ -89,19 +89,26 @@ PY
 
 # setup_tmux_plugins
 # Clones TPM if not present, then installs all plugins headlessly.
+# Warns on failure but does not abort — plugins are non-critical.
 setup_tmux_plugins() {
   local tpm_dir="$HOME/.config/tmux/plugins/tpm"
 
   if [ ! -d "$tpm_dir" ]; then
     echo "[install] TPM (tmux plugin manager)"
-    git clone https://github.com/tmux-plugins/tpm "$tpm_dir" \
-      || { echo "[error] failed to clone TPM" >&2; return 1; }
+    if ! git clone https://github.com/tmux-plugins/tpm "$tpm_dir" 2>/dev/null; then
+      echo "[warn] failed to clone TPM — tmux plugins will be skipped" >&2
+      return 0
+    fi
   else
     echo "[skip] TPM already installed"
   fi
 
-  echo "[sync] tmux plugins (headless)"
-  "$tpm_dir/bin/install_plugins"
+  if [ -f "$tpm_dir/bin/install_plugins" ]; then
+    echo "[sync] tmux plugins (headless)"
+    "$tpm_dir/bin/install_plugins" 2>/dev/null || echo "[warn] tmux plugin install failed — skipping" >&2
+  else
+    echo "[warn] TPM install_plugins binary missing — skipping plugin install" >&2
+  fi
 }
 
 # reload_tmux_config

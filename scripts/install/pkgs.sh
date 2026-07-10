@@ -72,7 +72,7 @@ resolve_pkg_name() {
   esac
 }
 
-# _install_github_deb <tool>
+# _install_github_deb <tool> <repo>
 # Resolves the latest amd64 .deb for a GitHub release and installs it.
 _install_github_deb() {
   local tool="$1" repo="$2"
@@ -96,6 +96,7 @@ _install_github_deb() {
 
 # install_pkg <logical-name>
 # Resolves and installs the package for the current $OS.
+# Warns on failure but does not abort — individual packages are non-critical.
 install_pkg() {
   local name="$1"
   local pkg
@@ -108,34 +109,40 @@ install_pkg() {
 
   echo "[install] $name ($pkg) on $OS"
 
+  local ok=0
   case "$OS" in
     arch)
-      _sudo pacman -S --noconfirm --needed "$pkg"
+      _sudo pacman -S --noconfirm --needed "$pkg" || ok=1
       ;;
     debian)
       if [[ "$pkg" == __github__* ]]; then
         local tool="${pkg#__github__}"
-        _install_github_deb "$tool" "sharkdp/${tool}"
+        _install_github_deb "$tool" "sharkdp/${tool}" || ok=1
       else
-        _sudo apt-get install -y "$pkg"
+        _sudo apt-get install -y "$pkg" || ok=1
       fi
       ;;
     macos)
       if [[ "$pkg" == __cask__* ]]; then
-        brew install --cask "${pkg#__cask__}"
+        brew install --cask "${pkg#__cask__}" || ok=1
       else
-        brew install "$pkg"
+        brew install "$pkg" || ok=1
       fi
       ;;
     fedora)
-      _sudo dnf install -y "$pkg"
+      _sudo dnf install -y "$pkg" || ok=1
       ;;
     alpine)
-      _sudo apk add --no-cache "$pkg"
+      _sudo apk add --no-cache "$pkg" || ok=1
       ;;
     *)
       echo "[error] unsupported OS: $OS" >&2
       return 1
       ;;
   esac
+
+  if [ "$ok" -ne 0 ]; then
+    echo "[warn] failed to install $name — continuing without it" >&2
+    return 0
+  fi
 }
