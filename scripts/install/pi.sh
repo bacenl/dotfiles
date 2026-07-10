@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# _pi_is_working
+# Returns 0 if pi is installed and actually runs (not just a broken symlink).
+_pi_is_working() {
+  command -v pi >/dev/null 2>&1 && pi --version >/dev/null 2>&1
+}
+
 # install_pi_cli
 # Installs pi when it is missing. Requires node/npm to already be available.
 # Warns on failure but does not abort.
 install_pi_cli() {
-  if command -v pi >/dev/null 2>&1; then
+  if _pi_is_working; then
     echo "[skip] pi CLI already installed"
     return 0
   fi
@@ -16,13 +22,23 @@ install_pi_cli() {
   fi
 
   echo "[install] pi CLI"
+  # Use the same flags as the official pi.dev/install.sh:
+  # --min-release-age=0 bypasses npm's release-age gate
+  # --no-fund --no-audit reduce noise
+  # --loglevel=error shows real errors without verbose output
   if ! npm install -g --ignore-scripts \
     --min-release-age=0 \
     --no-fund --no-audit \
     --loglevel=error \
     --progress=false \
-    @earendil-works/pi-coding-agent 2>/dev/null; then
+    @earendil-works/pi-coding-agent; then
     echo "[warn] pi CLI install failed" >&2
+    return 0
+  fi
+
+  # Verify the install actually produced a working binary.
+  if ! _pi_is_working; then
+    echo "[warn] pi install produced broken binary — skipping pi packages" >&2
     return 0
   fi
 }
@@ -56,13 +72,13 @@ install_pi_packages() {
 
   install_pi_cli
 
-  if ! command -v pi >/dev/null 2>&1; then
-    echo "[skip] pi packages: pi not found"
+  if ! _pi_is_working; then
+    echo "[skip] pi packages: pi not working"
     return 0
   fi
 
-  if ! command -v node >/dev/null 2>&1 || [ ! -f "$pi_settings" ]; then
-    echo "[skip] pi packages: node not found or settings.json missing"
+  if [ ! -f "$pi_settings" ]; then
+    echo "[skip] pi packages: settings.json missing"
     return 0
   fi
 
