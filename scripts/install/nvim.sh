@@ -42,6 +42,9 @@ install_nvim() {
 
   if [ "$ok" -ne 0 ]; then
     echo "[warn] neovim install failed — continuing" >&2
+    if declare -f _log_setup_fail >/dev/null 2>&1; then
+      _log_setup_fail "install neovim"
+    fi
     return 0
   fi
 }

@@ -143,6 +143,10 @@ install_pkg() {
 
   if [ "$ok" -ne 0 ]; then
     echo "[warn] failed to install $name — continuing without it" >&2
+    # Log to failure summary if the global helper is available.
+    if declare -f _log_setup_fail >/dev/null 2>&1; then
+      _log_setup_fail "install $name"
+    fi
     return 0
   fi
 }

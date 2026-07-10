@@ -16,7 +16,12 @@ install_pi_cli() {
   fi
 
   echo "[install] pi CLI"
-  if ! npm install -g --ignore-scripts @earendil-works/pi-coding-agent; then
+  if ! npm install -g --ignore-scripts \
+    --min-release-age=0 \
+    --no-fund --no-audit \
+    --loglevel=error \
+    --progress=false \
+    @earendil-works/pi-coding-agent 2>/dev/null; then
     echo "[warn] pi CLI install failed" >&2
     return 0
   fi

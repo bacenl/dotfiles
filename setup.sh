@@ -98,6 +98,40 @@ _sudo() {
 }
 
 # ──────────────────────────────────────────────
+# Global failure log — shared by all helpers
+# ──────────────────────────────────────────────
+_SETUP_FAIL_LOG=""
+
+_setup_init_fail_log() {
+  _SETUP_FAIL_LOG=$(mktemp /tmp/setup-fail-XXXXXX)
+  : > "$_SETUP_FAIL_LOG"
+}
+
+_setup_cleanup_fail_log() {
+  rm -f "$_SETUP_FAIL_LOG"
+}
+
+# _log_setup_fail <message>
+# Records a failure for the end-of-run summary.
+# Safe to call even if the log isn't initialized.
+_log_setup_fail() {
+  if [ -n "$_SETUP_FAIL_LOG" ] && [ -f "$_SETUP_FAIL_LOG" ]; then
+    echo "  - $1" >> "$_SETUP_FAIL_LOG"
+  fi
+}
+
+# _report_setup_failures <profile-name>
+# Prints any failures collected during setup.
+_report_setup_failures() {
+  if [ -n "$_SETUP_FAIL_LOG" ] && [ -s "$_SETUP_FAIL_LOG" ]; then
+    echo ""
+    echo "⚠  Setup completed with warnings:"
+    cat "$_SETUP_FAIL_LOG"
+    echo ""
+  fi
+}
+
+# ──────────────────────────────────────────────
 # Bootstrap: install minimal deps before anything else
 # ──────────────────────────────────────────────
 _install_brew() {
@@ -182,6 +216,10 @@ main() {
 
   bootstrap_deps
   clone_dotfiles
+
+  # Initialize the global failure log before sourcing helpers.
+  _setup_init_fail_log
+  trap _setup_cleanup_fail_log EXIT
 
   # Source helpers (now that repo is present)
   # shellcheck source=scripts/install/pkgs.sh

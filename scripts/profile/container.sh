@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins
+# Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins,
+# _log_setup_fail, _report_setup_failures
 # already defined (sourced by setup.sh before calling this).
+#
+# Arguments:
+#   $1 - dotfiles_dir
+#   $2 - desktop flag: "omarchy" | "hypr" | ""
 
 # _step <label> <command...>
 # Runs a non-critical step, warning on failure without aborting.
@@ -10,6 +15,7 @@ _step() {
   local label="$1"; shift
   if ! "$@"; then
     echo "[warn] $label failed — continuing" >&2
+    _log_setup_fail "$label"
     return 0
   fi
 }
@@ -55,6 +61,8 @@ run_container_profile() {
   echo "==> [container] Installing pi packages"
   _step "pi settings profile" select_pi_settings_profile "$dotfiles_dir" devcontainer
   _step "pi packages" install_pi_packages "$dotfiles_dir" devcontainer
+
+  _report_setup_failures "container"
 
   echo ""
   echo "[done] container profile complete"

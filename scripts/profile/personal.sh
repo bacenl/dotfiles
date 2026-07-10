@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins,
-# reload_tmux_config
+# reload_tmux_config, _log_setup_fail, _report_setup_failures
 # already defined (sourced by setup.sh before calling this).
 #
 # Arguments:
@@ -15,6 +15,7 @@ _step() {
   local label="$1"; shift
   if ! "$@"; then
     echo "[warn] $label failed — continuing" >&2
+    _log_setup_fail "$label"
     return 0
   fi
 }
@@ -81,9 +82,12 @@ SERVICE
 
   if command -v systemctl >/dev/null 2>&1; then
     systemctl --user daemon-reload
-    systemctl --user enable --now pi-daily-capture.timer 2>/dev/null \
-      || echo "[warn] pi-daily-capture.timer could not be enabled" >&2
-    echo "[timer] pi-daily-capture.timer enabled (23:00 JST)"
+    if ! systemctl --user enable --now pi-daily-capture.timer 2>/dev/null; then
+      echo "[warn] pi-daily-capture.timer could not be enabled" >&2
+      _log_setup_fail "pi-daily-capture.timer"
+    else
+      echo "[timer] pi-daily-capture.timer enabled (23:00 JST)"
+    fi
   else
     echo "[warn] systemctl not available; timer files written to $timer_dir"
   fi
@@ -101,8 +105,10 @@ SERVICE
       echo "==> [personal] Installing desktop applications"
       install_pkg vivaldi
       install_pkg syncthing
-      systemctl --user enable --now syncthing.service 2>/dev/null \
-        || echo "[warn] syncthing service could not be enabled" >&2
+      if ! systemctl --user enable --now syncthing.service 2>/dev/null; then
+        echo "[warn] syncthing service could not be enabled" >&2
+        _log_setup_fail "syncthing.service"
+      fi
       omarchy default terminal kitty 2>/dev/null \
         || echo "[warn] Kitty was installed but could not be selected automatically"
 
@@ -120,8 +126,10 @@ SERVICE
       EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
 CAPS2ESC
       fi
-      sudo systemctl enable --now udevmon.service 2>/dev/null \
-        || echo "[warn] udevmon service could not be enabled" >&2
+      if ! sudo systemctl enable --now udevmon.service 2>/dev/null; then
+        echo "[warn] udevmon service could not be enabled" >&2
+        _log_setup_fail "udevmon.service"
+      fi
 
       ;;
     hypr)
@@ -156,8 +164,10 @@ CAPS2ESC
   echo "==> [personal] Enabling ssh-agent user socket"
   if command -v systemctl >/dev/null 2>&1 &&
      systemctl --user cat ssh-agent.socket >/dev/null 2>&1; then
-    systemctl --user enable --now ssh-agent.socket 2>/dev/null \
-      || echo "[warn] ssh-agent.socket could not be enabled" >&2
+    if ! systemctl --user enable --now ssh-agent.socket 2>/dev/null; then
+      echo "[warn] ssh-agent.socket could not be enabled" >&2
+      _log_setup_fail "ssh-agent.socket"
+    fi
   else
     echo "[skip] ssh-agent socket: packaged user unit unavailable"
   fi
@@ -183,14 +193,18 @@ CAPS2ESC
     install_pkg nm-connection-editor
     sudo systemctl stop iwd systemd-networkd 2>/dev/null || true
     sudo systemctl disable iwd systemd-networkd 2>/dev/null || true
-    sudo systemctl enable --now NetworkManager 2>/dev/null \
-      || echo "[warn] NetworkManager could not be enabled" >&2
+    if ! sudo systemctl enable --now NetworkManager 2>/dev/null; then
+      echo "[warn] NetworkManager could not be enabled" >&2
+      _log_setup_fail "NetworkManager"
+    fi
 
     if command -v yay &>/dev/null; then
       yay -S --noconfirm gazelle-tui 2>/dev/null \
         || echo "[warn] gazelle-tui could not be installed" >&2
     fi
   fi
+
+  _report_setup_failures "personal"
 
   echo ""
   echo "[done] personal profile complete"
