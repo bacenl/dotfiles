@@ -40,8 +40,8 @@ _sudo() {
 resolve_pkg_name() {
   local name="$1" os="$2"
   case "${name}:${os}" in
-    # bat is renamed on Debian/Ubuntu
-    bat:debian)         echo "batcat" ;;
+    # bat: Debian/Ubuntu — not reliably in apt; install from GitHub release
+    bat:debian)        echo "__github__bat" ;;
     # node package name varies
     node:arch)          echo "nodejs" ;;
     node:debian)        echo "nodejs" ;;
@@ -91,7 +91,16 @@ install_pkg() {
       _sudo pacman -S --noconfirm --needed "$pkg"
       ;;
     debian)
-      _sudo apt-get install -y "$pkg"
+      if [[ "$pkg" == __github__* ]]; then
+        local tool="${pkg#__github__}"
+        local url="https://github.com/sharkdp/${tool}/releases/latest/download/${tool}_x86_64.deb"
+        echo "[install] $name from GitHub ($url)"
+        local tmpdeb
+        tmpdeb=$(mktemp /tmp/bat-XXXXXX.deb)
+        curl -fsSL "$url" -o "$tmpdeb" && _sudo dpkg -i "$tmpdeb" && rm -f "$tmpdeb"
+      else
+        _sudo apt-get install -y "$pkg"
+      fi
       ;;
     macos)
       if [[ "$pkg" == __cask__* ]]; then
