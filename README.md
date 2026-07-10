@@ -26,3 +26,29 @@ stow --adopt nvim
 git restore -- nvim
 git status --short -- nvim
 ```
+
+## Container / devcontainer
+
+Install a minimal dev environment (neovim, tmux, ripgrep, fzf, bat, zoxide, node, npm, yazi, pi) in a container:
+
+```bash
+# Quick bootstrap
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh)" \
+  -- --profile devcontainer
+
+# From a local clone
+./setup.sh --profile devcontainer
+```
+
+Supported OSes: Arch, Debian/Ubuntu, macOS, Fedora, Alpine (detected automatically).
+
+### Options
+
+| Flag | Description |
+|---|---|
+| `--dotfiles-ref <ref>` | Tag, branch, or commit (default: `master`) |
+| `--dotfiles-dir <path>` | Clone location (default: `~/dotfiles`) |
+| `--nvim-version <ver>` | Neovim version for Debian/Ubuntu (default: `0.11.0`) |
+| `--bootstrap git` | Install `gh` first and clone via GitHub CLI |
+
+The `devcontainer` profile is rerunnable — stow is idempotent and refuses packages with uncommitted changes.
