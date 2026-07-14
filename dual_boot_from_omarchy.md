@@ -48,38 +48,83 @@ guide.
 Do not proceed if `p2` is not the Btrfs root partition, if another disk is
 present and its identity is unclear, or if the backup is incomplete.
 
-## 2. Create unallocated space for Windows
+## 2. Create unallocated space with an Arch live USB
 
-Do this from a **GParted Live** USB, not while Omarchy is running. This avoids
-resizing the mounted root filesystem.
+Do this from the Arch live USB, not while Omarchy is running. Btrfs can shrink
+while mounted, but changing the partition boundary of the running root disk is
+unnecessarily risky.
 
-1. Boot GParted Live in **UEFI** mode.
-2. In GParted, select the 953.9 GiB disk (`/dev/nvme0n1`). Confirm its size
-   before changing anything.
-3. Confirm the two existing partitions:
-   - `p1`: 1 GiB FAT32 EFI System Partition. Leave it unchanged.
-   - `p2`: about 952.9 GiB Btrfs. This is Omarchy. It is the only partition to
-     resize.
-4. Right-click `p2` and choose **Resize/Move**.
-5. Reduce it **from the right/end only**. Do not move its starting position.
-   Leave at least **200 GiB** of unallocated space immediately after `p2` for
-   Windows. GParted must show that free space as `unallocated`, not as a new
-   partition.
-6. Before applying, verify that the only queued operation is a reduction of
-   `/dev/nvme0n1p2`. There must be no operation on `p1` and no format,
-   move, or creation operation.
-7. Apply the operation and wait for it to finish without interrupting power.
-8. Shut down GParted Live. Remove its USB.
+The commands below release **250 GiB** from Btrfs, producing 250 GiB of
+unallocated space for Windows. They are valid only because `p2` is the final
+partition on this disk and currently ends at the end of the disk. Do not adapt
+them to a different layout without recalculating the partition endpoint.
 
-Optional but recommended: boot the Omarchy USB or the installed Omarchy system
-once before installing Windows. Confirm that Omarchy starts and `/` is still
-Btrfs. From a live environment, this read-only check is also useful:
+1. Boot the Arch USB in **UEFI** mode and connect to the network if needed.
+2. Confirm the disk layout again. The output must show only the existing EFI
+   partition followed by the Btrfs root partition:
 
-```bash
-sudo btrfs check --readonly /dev/nvme0n1p2
-```
+   ```bash
+   lsblk -o NAME,PATH,SIZE,TYPE,FSTYPE,MOUNTPOINTS
+   sudo parted /dev/nvme0n1 unit GiB print free
+   ```
 
-Do not run `btrfs check --repair`.
+   Stop unless `p1` is the 1 GiB FAT32 EFI partition and `p2` is the final,
+   approximately 952.9 GiB Btrfs partition.
+3. Mount the Btrfs top-level subvolume and confirm it is the expected
+   filesystem:
+
+   ```bash
+   sudo mount -o subvolid=5 /dev/nvme0n1p2 /mnt
+   sudo btrfs filesystem usage /mnt
+   ```
+
+   Ensure the estimated free space plus the unused device space is sufficient
+   to reduce the filesystem by 250 GiB. If it is not, stop and free data from
+   Omarchy before trying again.
+4. Shrink Btrfs by exactly 250 GiB. This may take a long time while Btrfs moves
+   extents; do not interrupt it:
+
+   ```bash
+   sudo btrfs filesystem resize -250G /mnt
+   sudo btrfs filesystem show /mnt
+   ```
+
+   The `G` suffix means GiB. If the resize fails, do not change the partition;
+   unmount and reboot to Omarchy, free more space, and retry from this section.
+5. Unmount Btrfs:
+
+   ```bash
+   sudo umount /mnt
+   ```
+
+6. Reduce only the **end** of partition 2 by the same 250 GiB. This command
+   preserves partition 2's starting offset and changes no other partition:
+
+   ```bash
+   sudo parted --script /dev/nvme0n1 unit GiB resizepart 2 -250GiB
+   sudo partprobe /dev/nvme0n1
+   sudo parted /dev/nvme0n1 unit GiB print free
+   ```
+
+   Confirm that `p1` is unchanged, `p2` is about 250 GiB smaller than before,
+   and there is about 250 GiB of **unallocated** space after `p2`.
+7. Check the now-unmounted Btrfs filesystem read-only:
+
+   ```bash
+   sudo btrfs check --readonly /dev/nvme0n1p2
+   ```
+
+   Do not run `btrfs check --repair`.
+8. Reboot into Omarchy before installing Windows. Confirm that it starts and
+   that the root filesystem is still `/dev/nvme0n1p2` Btrfs:
+
+   ```bash
+   findmnt /
+   lsblk -f
+   ```
+
+   If Omarchy does not boot, stop and boot the Arch USB again; do not start the
+   Windows installer until Omarchy is working.
 
 ## 3. Set firmware options
 
