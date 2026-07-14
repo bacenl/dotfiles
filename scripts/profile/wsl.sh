@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins,
-# reload_tmux_config, _log_setup_fail, _report_setup_failures
+# reload_tmux_config, _log_setup_fail
 # already defined (sourced by setup.sh before calling this).
 
 _step() {
@@ -56,8 +56,6 @@ run_wsl_profile() {
   echo "==> [wsl] Installing personal Pi packages"
   _step "pi settings profile" select_pi_settings_profile "$dotfiles_dir" personal
   _step "pi packages" install_pi_packages "$dotfiles_dir" personal
-
-  _report_setup_failures "wsl"
 
   echo ""
   echo "[done] wsl profile complete"

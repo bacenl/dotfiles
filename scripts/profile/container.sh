@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins,
-# _log_setup_fail, _report_setup_failures
+# _log_setup_fail
 # already defined (sourced by setup.sh before calling this).
 #
 # Arguments:
@@ -61,8 +61,6 @@ run_container_profile() {
   echo "==> [container] Installing pi packages"
   _step "pi settings profile" select_pi_settings_profile "$dotfiles_dir" devcontainer
   _step "pi packages" install_pi_packages "$dotfiles_dir" devcontainer
-
-  _report_setup_failures "container"
 
   echo ""
   echo "[done] container profile complete"

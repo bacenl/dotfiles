@@ -131,7 +131,7 @@ Available options:
 | `--bootstrap curl\|git` | Public HTTPS clone or authenticated `gh` clone |
 | `--dotfiles-ref <ref>` | Tag, branch, or commit checked out after cloning |
 | `--dotfiles-dir <path>` | Clone location; defaults to `~/dotfiles` |
-| `--nvim-version <version>` | Neovim tarball version for Debian/Ubuntu |
+| `--nvim-version <version>` | Upstream Neovim release for Debian/Ubuntu and Arch/Fedora fallback |
 
 The installer is designed to be rerunnable. Stow refuses packages with tracked
 repository changes and preserves adopted untracked files for review. If one
@@ -230,8 +230,19 @@ These are intentionally **not** tracked:
 - `security/audit*.jsonl*` — local security audit logs
 - `vstack/` — runtime state
 
-All three profiles install the Pi CLI if needed and run `pi install` for every package
-listed in the active profile's `settings.json`. After setup completes, set
+All three profiles install the Pi CLI into `~/.local/bin` with Pi's official
+`https://pi.dev/install.sh` installer, avoiding root-owned global npm prefixes,
+then run `pi install` for every package listed in the active profile's
+`settings.json`. After setup completes, set
 credentials via `/login` or by exporting the relevant API key environment
 variable before starting pi. Peon sound packs are not tracked; install them
 interactively with `/peon install` if needed.
+
+## Version checks and final summary
+
+Every profile verifies Neovim is at least 0.11.2, the current LazyVim minimum.
+An already-compatible Neovim is preserved. Debian/Ubuntu uses the official
+upstream tarball; Arch and Fedora fall back to it if their package is stale.
+
+At the end of every setup run, a deduplicated summary repeats every `[error]`,
+`[warn]`, and `[skip]` line. Read this final block for required follow-up actions.
