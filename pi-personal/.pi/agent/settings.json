@@ -19,14 +19,16 @@
     "npm:pi-peon-ping"
   ],
   "defaultProvider": "local",
-  "defaultModel": "Ornith-1.0-35B",
+  "defaultModel": "local",
   "defaultThinkingLevel": "high",
   "defaultProjectTrust": "ask",
   "enableInstallTelemetry": false,
   "enableAnalytics": false,
   "hideThinkingBlock": false,
   "enabledModels": [
-    "gpt-5.5",
-    "local"
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "local",
+    "Ornith-1.0-35B"
   ]
 }
