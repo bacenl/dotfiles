@@ -1,6 +1,65 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+STOW_FAILURES=()
+
+record_stow_failure() {
+  local pkg="$1"
+  local reason="$2"
+
+  STOW_FAILURES+=("$pkg: $reason")
+}
+
+report_stow_failures() {
+  if [ "${#STOW_FAILURES[@]}" -eq 0 ]; then
+    return 0
+  fi
+
+  echo ""
+  echo "[error] one or more stow operations failed:" >&2
+  local failure
+  for failure in "${STOW_FAILURES[@]}"; do
+    printf '  * %s\n' "$failure" >&2
+  done
+  echo "        setup continued after these failures; review the stow output above" >&2
+  return 1
+}
+
+# remove_absolute_target_symlink_conflicts <pkg> <dotfiles_dir>
+# GNU Stow refuses to adopt absolute target symlinks. If one blocks a path this
+# package owns, remove only the symlink so Stow can create the managed link.
+remove_absolute_target_symlink_conflicts() {
+  local pkg="$1"
+  local dotfiles_dir="$2"
+  local pkg_path="$dotfiles_dir/$pkg"
+  local rel target link_dest
+
+  while IFS= read -r rel; do
+    rel="${rel#./}"
+    target="$HOME/$rel"
+
+    if [ ! -L "$target" ]; then
+      continue
+    fi
+
+    link_dest=$(readlink "$target")
+    case "$link_dest" in
+      /*) ;;
+      *) continue ;;
+    esac
+
+    case "$link_dest" in
+      "$pkg_path"|"$pkg_path"/*) continue ;;
+    esac
+
+    echo "[stow] replacing absolute target symlink: $target -> $link_dest"
+    if ! rm "$target"; then
+      record_stow_failure "$pkg" "could not remove absolute target symlink $target"
+      return 1
+    fi
+  done < <(cd "$pkg_path" && find . -mindepth 1 -print)
+}
+
 # do_stow <pkg> <dotfiles_dir>
 # Stows <pkg> from <dotfiles_dir> into $HOME. Idempotent.
 # Skips with a warning if the stow target directory doesn't exist.
@@ -20,12 +79,18 @@ do_stow() {
      ! git -C "$dotfiles_dir" diff --cached --quiet -- "$pkg"; then
     echo "[error] refusing to stow $pkg because $pkg_path has tracked changes" >&2
     echo "        commit, stash, or restore those changes before running setup again" >&2
-    return 1
+    record_stow_failure "$pkg" "package has tracked changes"
+    return 0
   fi
+
+  remove_absolute_target_symlink_conflicts "$pkg" "$dotfiles_dir" || return 0
 
   # Adopt existing files into the package, then restore tracked dotfiles so the
   # home directory points at the repository's versions without deleting data.
-  stow --dir="$dotfiles_dir" --target="$HOME" --adopt --restow "$pkg"
+  if ! stow --dir="$dotfiles_dir" --target="$HOME" --adopt --restow "$pkg"; then
+    record_stow_failure "$pkg" "stow command failed"
+    return 0
+  fi
   git -C "$dotfiles_dir" restore --worktree -- "$pkg"
 
   local adopted

@@ -16,7 +16,11 @@ existing file conflicts with a dotfile, the helper uses `stow --adopt` and then
 The helper refuses to operate on a package that already has tracked staged or
 unstaged changes. Files adopted into the package that are not tracked by Git
 are retained and listed for manual review. It never deletes a conflicting
-directory.
+directory. If a target path is an absolute symlink, the helper removes only the
+symlink before stowing because GNU Stow cannot adopt absolute symlinks.
+
+If one stow package fails, setup continues with the remaining packages and
+reports all stow failures at the end.
 
 To perform the same process manually:
 

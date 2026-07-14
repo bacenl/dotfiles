@@ -243,6 +243,8 @@ main() {
       run_personal_profile "$DOTFILES_DIR" "$DESKTOP_FLAG"
       ;;
   esac
+
+  report_stow_failures
 }
 
 main
