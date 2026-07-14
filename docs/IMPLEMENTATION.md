@@ -18,7 +18,7 @@ Notes:
 - [x] Merge the current `origin/master` into `feat/wsl-profile` and resolve conflicts.
 - [x] Add regression coverage for merged stow failure handling and WSL profile behavior.
 - [x] Run the complete shell/profile validation suite until all checks pass.
-- [ ] Commit and push the synchronized branch.
+- [x] Commit and push the synchronized branch.
 
 Notes:
 - `origin/master` merged cleanly; `INSTALL.md`, `README.md`, and `setup.sh` were auto-merged without conflict markers.
