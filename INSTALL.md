@@ -114,6 +114,9 @@ bash setup.sh --profile personal
 # Container setup
 bash setup.sh --profile container
 
+# WSL terminal setup (run inside WSL)
+bash setup.sh --profile wsl
+
 # Hyprland configs without Omarchy-specific setup
 bash setup.sh --profile personal --hypr
 ```
@@ -122,7 +125,7 @@ Available options:
 
 | Flag | Description |
 |---|---|
-| `--profile container\|personal` | Required installation profile |
+| `--profile devcontainer\|personal\|wsl` | Required installation profile (`container` aliases `devcontainer`) |
 | `--omarchy` | Personal profile with Omarchy desktop setup |
 | `--hypr` | Personal profile with Hyprland and Waybar configs |
 | `--bootstrap curl\|git` | Public HTTPS clone or authenticated `gh` clone |
@@ -134,6 +137,39 @@ The installer is designed to be rerunnable. Stow refuses packages with tracked
 repository changes and preserves adopted untracked files for review. If one
 stow package fails, setup continues with the rest and reports the stow failures
 at the end.
+
+## Windows Subsystem for Linux
+
+Install Ubuntu from an elevated Windows PowerShell session:
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+After creating the Linux user, run the bootstrap **inside Ubuntu**, not in
+PowerShell:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/setup.sh)" \
+  -- --profile wsl
+```
+
+The WSL profile installs Neovim, tmux, Fish, CLI development tools, and Pi. It
+uses `pi-personal/.pi/agent/settings.json`, including the personal package set,
+while omitting the personal Linux desktop and daily-capture setup.
+
+GNU Stow targets the WSL Linux home. Keep the checkout at `~/dotfiles`; do not
+place it under `/mnt/c` or set `$HOME` to a Windows-mounted directory. Native
+Windows projects may remain on NTFS and are available from WSL, for example:
+
+```fish
+cd /mnt/c/dev/MyGame
+nvim .
+pi
+```
+
+The WSL profile intentionally omits Kitty, SSH-agent systemd setup, Hyprland,
+Waybar, Omarchy, language-input configuration, and NetworkManager changes.
 
 ## Supply chain security
 
@@ -160,11 +196,12 @@ See [~/Projects/supply-chain-security](https://github.com/shisaai/supply-chain-s
 
 ## Pi coding agent
 
-There are two Pi setup entry points:
+There are three Pi setup entry points:
 
 ```bash
 ./setup.sh --profile devcontainer
 ./setup.sh --profile personal
+./setup.sh --profile wsl
 ```
 
 The shared `pi` stow package tracks:
@@ -181,6 +218,7 @@ Profile-specific settings are split so the package list differs by entry point:
 - `pi-personal/.pi/agent/settings.json` includes `git:github.com/mwolff44/pi-secured-setup@v1.0.3`; setup reapplies the peon approval-sound patch after installing packages.
 - `pi-personal-tools/.pi/agent/pi_daily_capture/` installs the personal-computer-only internship learning capture workflow. Run it with `python ~/.pi/agent/pi_daily_capture/capture.py`; it writes only to `/home/ubuntu/obsidian/internship/braindump/week_N/YYYY-MM-DD/pi-capture.md`.
 - `pi-devcontainer/.pi/agent/settings.json` omits `pi-secured-setup`; setup also skips local security patches for this profile. Devcontainer setup does not stow `pi-personal-tools`.
+- The WSL profile reuses `pi-personal/.pi/agent/settings.json` and personal Pi package patching, but does not stow `pi-personal-tools` or create its daily-capture timer.
 - `/toggle-security [on|off|status]` switches `~/.pi/agent/settings.json` between the personal profile and a generated security-off profile, then reloads Pi.
 
 These are intentionally **not** tracked:
@@ -192,7 +230,7 @@ These are intentionally **not** tracked:
 - `security/audit*.jsonl*` — local security audit logs
 - `vstack/` — runtime state
 
-Both profiles install the pi CLI if needed and run `pi install` for every package
+All three profiles install the Pi CLI if needed and run `pi install` for every package
 listed in the active profile's `settings.json`. After setup completes, set
 credentials via `/login` or by exporting the relevant API key environment
 variable before starting pi. Peon sound packs are not tracked; install them

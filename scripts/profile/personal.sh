@@ -75,9 +75,9 @@ Description=pi daily internship capture
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 /home/ethan/.pi/agent/pi_daily_capture/capture.py
-StandardOutput=append:/home/ethan/.pi/agent/pi_daily_capture/cron.log
-StandardError=append:/home/ethan/.pi/agent/pi_daily_capture/cron.log
+ExecStart=/usr/bin/python3 %h/.pi/agent/pi_daily_capture/capture.py
+StandardOutput=append:%h/.pi/agent/pi_daily_capture/cron.log
+StandardError=append:%h/.pi/agent/pi_daily_capture/cron.log
 SERVICE
 
   if command -v systemctl >/dev/null 2>&1; then

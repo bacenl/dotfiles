@@ -28,7 +28,7 @@ run_container_profile() {
 
   install_nvim
 
-  local pkgs=(tmux fzf ripgrep bat zoxide node npm)
+  local pkgs=(tmux fzf ripgrep bat zoxide fish node npm)
   for pkg in "${pkgs[@]}"; do
     install_pkg "$pkg"
   done
@@ -39,7 +39,7 @@ run_container_profile() {
   echo ""
   echo "==> [container] Stowing configs"
 
-  local stow_targets=(nvim tmux claude pi npm)
+  local stow_targets=(nvim tmux fish claude pi npm)
   for target in "${stow_targets[@]}"; do
     _step "stow $target" do_stow "$target" "$dotfiles_dir"
   done

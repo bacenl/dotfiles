@@ -17,10 +17,11 @@ NVIM_VERSION="${NVIM_VERSION:-0.11.0}"
 # ──────────────────────────────────────────────
 usage() {
   cat <<EOF
-Usage: setup.sh --profile <devcontainer|personal> [OPTIONS]
+Usage: setup.sh --profile <devcontainer|personal|wsl> [OPTIONS]
 
 Options:
-  --profile <devcontainer|personal> Required. Which profile to install.
+  --profile <devcontainer|personal|wsl>
+                                  Required. Which profile to install.
                                   Alias: container = devcontainer.
   --omarchy                        (personal only) Stow omarchy + hypr + waybar.
   --hypr                           (personal only) Stow hypr + waybar only.
@@ -62,14 +63,47 @@ if [ "$PROFILE" = "container" ]; then
   PROFILE="devcontainer"
 fi
 
-if [ "$PROFILE" != "devcontainer" ] && [ "$PROFILE" != "personal" ]; then
-  echo "[error] --profile must be 'devcontainer' or 'personal'" >&2
+if [ "$PROFILE" != "devcontainer" ] && [ "$PROFILE" != "personal" ] && [ "$PROFILE" != "wsl" ]; then
+  echo "[error] --profile must be 'devcontainer', 'personal', or 'wsl'" >&2
   exit 1
 fi
 
 if [ -n "$DESKTOP_FLAG" ] && [ "$PROFILE" != "personal" ]; then
   echo "[error] --omarchy and --hypr are only valid with --profile personal" >&2
   exit 1
+fi
+
+if [ "$PROFILE" = "wsl" ]; then
+  if ! command -v realpath >/dev/null 2>&1; then
+    echo "[error] the wsl profile requires realpath to validate stow paths" >&2
+    exit 1
+  fi
+  if ! wsl_home=$(realpath -m -- "$HOME"); then
+    echo "[error] could not resolve WSL home directory: $HOME" >&2
+    exit 1
+  fi
+  if ! wsl_dotfiles_dir=$(realpath -m -- "$DOTFILES_DIR"); then
+    echo "[error] could not resolve dotfiles directory: $DOTFILES_DIR" >&2
+    exit 1
+  fi
+  case "$wsl_home" in
+    /mnt|/mnt/*)
+      echo "[error] the wsl profile requires a Linux home directory, not $HOME" >&2
+      echo "        run it from the WSL filesystem so GNU Stow creates Linux symlinks" >&2
+      exit 1
+      ;;
+  esac
+  case "$wsl_dotfiles_dir" in
+    /mnt|/mnt/*)
+      echo "[error] the WSL dotfiles checkout must be in the WSL filesystem, not $DOTFILES_DIR" >&2
+      echo "        use a path such as $HOME/dotfiles" >&2
+      exit 1
+      ;;
+  esac
+  if ! grep -qiE '(microsoft|wsl)' /proc/sys/kernel/osrelease 2>/dev/null; then
+    echo "[error] the wsl profile must be run inside WSL" >&2
+    exit 1
+  fi
 fi
 
 # ──────────────────────────────────────────────
@@ -241,6 +275,11 @@ main() {
       # shellcheck source=scripts/profile/personal.sh
       source "$DOTFILES_DIR/scripts/profile/personal.sh"
       run_personal_profile "$DOTFILES_DIR" "$DESKTOP_FLAG"
+      ;;
+    wsl)
+      # shellcheck source=scripts/profile/wsl.sh
+      source "$DOTFILES_DIR/scripts/profile/wsl.sh"
+      run_wsl_profile "$DOTFILES_DIR"
       ;;
   esac
 
