@@ -6,7 +6,7 @@
 - [x] Install and stow Fish in the devcontainer profile without changing its Pi profile.
 - [x] Add a WSL profile that stows into the WSL Linux home and uses the personal Pi profile.
 - [x] Add regression tests and installation documentation.
-- [ ] Commit and push the validated changes.
+- [x] Commit the validated changes and prepare the branch for push.
 
 Notes:
 - Work is isolated in a Git worktree so existing edits in `~/dotfiles` remain untouched.
