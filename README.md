@@ -19,8 +19,9 @@ are retained and listed for manual review. It never deletes a conflicting
 directory. If a target path is an absolute symlink, the helper removes only the
 symlink before stowing because GNU Stow cannot adopt absolute symlinks.
 
-If one stow package fails, setup continues with the remaining packages and
-reports all stow failures at the end.
+If one stow package fails, setup continues with the remaining packages. Every
+profile finishes with a deduplicated end-of-run summary of all errors, warnings,
+and skipped steps so follow-up work is not buried in the full install log.
 
 To perform the same process manually:
 
@@ -53,10 +54,14 @@ Supported OSes: Arch, Debian/Ubuntu, macOS, Fedora, Alpine (detected automatical
 |---|---|
 | `--dotfiles-ref <ref>` | Tag, branch, or commit (default: `master`) |
 | `--dotfiles-dir <path>` | Clone location (default: `~/dotfiles`) |
-| `--nvim-version <ver>` | Neovim version for Debian/Ubuntu (default: `0.11.0`) |
+| `--nvim-version <ver>` | Upstream Neovim fallback release (default: `0.11.2`) |
 | `--bootstrap git` | Install `gh` first and clone via GitHub CLI |
 
 The `devcontainer` profile is rerunnable — stow is idempotent and refuses packages with uncommitted changes.
+
+All profiles require Neovim 0.11.2 or newer for LazyVim. Compatible existing
+versions are preserved; Debian/Ubuntu installs the official upstream tarball,
+and stale Arch/Fedora packages fall back to that release.
 
 ## WSL
 

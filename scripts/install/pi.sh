@@ -7,39 +7,42 @@ _pi_is_working() {
   command -v pi >/dev/null 2>&1 && pi --version >/dev/null 2>&1
 }
 
+_pi_add_local_bin_to_path() {
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+  hash -r 2>/dev/null || true
+}
+
 # install_pi_cli
-# Installs pi when it is missing. Requires node/npm to already be available.
-# Warns on failure but does not abort.
+# Installs pi when it is missing using Pi's official user-local installer.
+# Returns nonzero on failure so the profile can record it in the final summary.
 install_pi_cli() {
+  _pi_add_local_bin_to_path
+
   if _pi_is_working; then
     echo "[skip] pi CLI already installed"
     return 0
   fi
 
-  if ! command -v npm >/dev/null 2>&1; then
-    echo "[skip] pi CLI install: npm not found" >&2
-    return 0
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "[error] pi CLI install requires curl; install curl and rerun setup" >&2
+    return 1
   fi
 
-  echo "[install] pi CLI"
-  # Use the same flags as the official pi.dev/install.sh:
-  # --min-release-age=0 bypasses npm's release-age gate
-  # --no-fund --no-audit reduce noise
-  # --loglevel=error shows real errors without verbose output
-  if ! npm install -g --ignore-scripts \
-    --min-release-age=0 \
-    --no-fund --no-audit \
-    --loglevel=error \
-    --progress=false \
-    @earendil-works/pi-coding-agent; then
-    echo "[warn] pi CLI install failed" >&2
-    return 0
+  echo "[install] pi CLI via https://pi.dev/install.sh"
+  if ! curl -fsSL https://pi.dev/install.sh | sh; then
+    echo "[error] pi CLI install failed; check network access to https://pi.dev/install.sh and rerun setup" >&2
+    return 1
   fi
+
+  _pi_add_local_bin_to_path
 
   # Verify the install actually produced a working binary.
   if ! _pi_is_working; then
-    echo "[warn] pi install produced broken binary — skipping pi packages" >&2
-    return 0
+    echo "[error] pi installer completed but pi is not working; verify $HOME/.local/bin/pi and rerun setup" >&2
+    return 1
   fi
 }
 
@@ -64,17 +67,19 @@ select_pi_settings_profile() {
 
 # install_pi_packages <dotfiles_dir> [personal|devcontainer]
 # Reconciles the pi package list recorded in ~/.pi/agent/settings.json.
-# Individual plugin failures are non-fatal.
+# Attempts every package, then returns nonzero if parsing or installation failed.
 install_pi_packages() {
   local dotfiles_dir="$1"
   local profile="${2:-personal}"
   local pi_settings="$HOME/.pi/agent/settings.json"
 
-  install_pi_cli
+  if ! install_pi_cli; then
+    return 1
+  fi
 
   if ! _pi_is_working; then
-    echo "[skip] pi packages: pi not working"
-    return 0
+    echo "[error] pi packages were not installed because pi is not working; rerun setup after fixing Pi" >&2
+    return 1
   fi
 
   if [ ! -f "$pi_settings" ]; then
@@ -83,24 +88,42 @@ install_pi_packages() {
   fi
 
   echo "[sync] pi packages from $pi_settings"
-  node -e "
+  local package_output
+  if ! package_output=$(node -e "
     const fs = require('fs');
     const s = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
     for (const p of s.packages || []) {
       const source = typeof p === 'string' ? p : p && p.source;
       if (source) process.stdout.write(source + '\\n');
     }
-  " "$pi_settings" | while IFS= read -r pkg; do
+  " "$pi_settings"); then
+    echo "[error] could not read Pi packages from $pi_settings; fix the JSON and rerun setup" >&2
+    if declare -f _log_setup_fail >/dev/null 2>&1; then
+      _log_setup_fail "read Pi package settings"
+    fi
+    return 1
+  fi
+
+  local package_status=0
+  while IFS= read -r pkg; do
     [ -n "$pkg" ] || continue
     echo "[pi] installing package: $pkg"
-    pi install "$pkg" || echo "[warn] pi install failed for: $pkg" >&2
-  done
+    if ! pi install "$pkg"; then
+      echo "[error] pi install failed for: $pkg; fix the package source and rerun setup" >&2
+      if declare -f _log_setup_fail >/dev/null 2>&1; then
+        _log_setup_fail "pi install $pkg"
+      fi
+      package_status=1
+    fi
+  done <<< "$package_output"
 
   if [ "$profile" = "personal" ]; then
     apply_pi_local_patches "$dotfiles_dir"
   else
     echo "[skip] pi local patches: profile $profile"
   fi
+
+  return "$package_status"
 }
 
 # apply_pi_local_patches <dotfiles_dir>

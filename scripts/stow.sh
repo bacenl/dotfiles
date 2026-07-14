@@ -21,9 +21,9 @@ report_stow_failures() {
   echo "[error] one or more stow operations failed:" >&2
   local failure
   for failure in "${STOW_FAILURES[@]}"; do
-    printf '  * %s\n' "$failure" >&2
+    printf '[error] stow %s\n' "$failure" >&2
   done
-  echo "        setup continued after these failures; review the stow output above" >&2
+  echo "[error] setup continued after stow failures; review the stow output above and rerun setup" >&2
   return 1
 }
 
@@ -224,7 +224,7 @@ setup_tmux_plugins() {
   if [ ! -d "$tpm_dir" ]; then
     echo "[install] TPM (tmux plugin manager)"
     if ! git clone https://github.com/tmux-plugins/tpm "$tpm_dir" 2>/dev/null; then
-      echo "[warn] failed to clone TPM — tmux plugins will be skipped" >&2
+      echo "[warn] failed to clone TPM; check network access and rerun setup" >&2
       return 0
     fi
   else
@@ -235,7 +235,7 @@ setup_tmux_plugins() {
     echo "[sync] tmux plugins (headless)"
     "$tpm_dir/bin/install_plugins" 2>/dev/null || echo "[warn] tmux plugin install failed — skipping" >&2
   else
-    echo "[warn] TPM install_plugins binary missing — skipping plugin install" >&2
+    echo "[warn] TPM install_plugins binary missing in $tpm_dir; remove that incomplete directory and rerun setup" >&2
   fi
 }
 

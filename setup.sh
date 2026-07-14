@@ -10,7 +10,7 @@ PROFILE=""
 DESKTOP_FLAG=""
 BOOTSTRAP="curl"
 DOTFILES_REF="${DOTFILES_REF:-master}"
-NVIM_VERSION="${NVIM_VERSION:-0.11.0}"
+NVIM_VERSION="${NVIM_VERSION:-0.11.2}"
 
 # ──────────────────────────────────────────────
 # Arg parsing
@@ -31,12 +31,13 @@ Options:
   --dotfiles-ref <ref>             Git tag, branch, or commit to check out.
                                    Default: master.
   --dotfiles-dir <path>            Where to clone dotfiles. Default: ~/dotfiles.
-  --nvim-version <version>         Neovim version for Debian/Ubuntu. Default: 0.11.0.
+  --nvim-version <version>         Neovim release fallback version. Default: 0.11.2.
   -h, --help                       Show this help.
 EOF
 }
 
-while [ $# -gt 0 ]; do
+_parse_and_validate_args() {
+  while [ $# -gt 0 ]; do
   case "$1" in
     --profile)        PROFILE="$2";        shift 2 ;;
     --omarchy)        DESKTOP_FLAG="omarchy"; shift ;;
@@ -105,6 +106,7 @@ if [ "$PROFILE" = "wsl" ]; then
     exit 1
   fi
 fi
+}
 
 # ──────────────────────────────────────────────
 # OS detection (inline — pkgs.sh not sourced yet)
@@ -162,6 +164,27 @@ _report_setup_failures() {
     echo "⚠  Setup completed with warnings:"
     cat "$_SETUP_FAIL_LOG"
     echo ""
+  fi
+}
+
+# Fallback used when setup fails before the cloned summary helper is available.
+# The repository helper replaces this after main exits successfully or partially.
+report_setup_run_summary() {
+  local run_log="$1"
+  local issue_lines
+
+  issue_lines=$(awk '
+    /^\[(error|warn|skip)\]/ && !seen[$0]++ { print }
+  ' "$run_log")
+
+  echo ""
+  echo "================================================"
+  echo " End-of-run summary"
+  echo "================================================"
+  if [ -z "$issue_lines" ]; then
+    echo "No warnings, errors, or skipped steps."
+  else
+    printf '%s\n' "$issue_lines"
   fi
 }
 
@@ -244,6 +267,8 @@ clone_dotfiles() {
 # Main
 # ──────────────────────────────────────────────
 main() {
+  _parse_and_validate_args "$@"
+
   echo "================================================"
   echo " dotfiles setup — profile: $PROFILE  OS: $OS"
   echo "================================================"
@@ -283,7 +308,33 @@ main() {
       ;;
   esac
 
-  report_stow_failures
+  local setup_status=0
+  if ! report_stow_failures; then
+    setup_status=1
+  fi
+  if [ -n "$_SETUP_FAIL_LOG" ] && [ -s "$_SETUP_FAIL_LOG" ]; then
+    setup_status=1
+  fi
+  return "$setup_status"
 }
 
-main
+_SETUP_RUN_LOG=$(mktemp /tmp/setup-run-XXXXXX)
+trap 'rm -f "$_SETUP_RUN_LOG"' EXIT
+set +e
+( set -e; main "$@" ) 2>&1 | tee "$_SETUP_RUN_LOG"
+_SETUP_STATUS=${PIPESTATUS[0]}
+set -e
+
+# Commands such as package managers may fail without using setup's tagged log
+# format. Always preserve a nonzero status as an actionable summary item.
+if [ "$_SETUP_STATUS" -ne 0 ]; then
+  echo "[error] setup exited with status $_SETUP_STATUS; review the output above and rerun setup" | tee -a "$_SETUP_RUN_LOG"
+fi
+
+# Keep the summary implementation built into this bootstrap script. Do not
+# source code from DOTFILES_DIR here: argument parsing ran in the pipeline
+# subshell, and a custom checkout path must not affect the parent shell.
+report_setup_run_summary "$_SETUP_RUN_LOG"
+rm -f "$_SETUP_RUN_LOG"
+trap - EXIT
+exit "$_SETUP_STATUS"

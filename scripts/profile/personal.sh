@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Requires: $OS, install_pkg, install_nvim, do_stow, setup_tmux_plugins,
-# reload_tmux_config, _log_setup_fail, _report_setup_failures
+# reload_tmux_config, _log_setup_fail
 # already defined (sourced by setup.sh before calling this).
 #
 # Arguments:
@@ -203,8 +203,6 @@ CAPS2ESC
         || echo "[warn] gazelle-tui could not be installed" >&2
     fi
   fi
-
-  _report_setup_failures "personal"
 
   echo ""
   echo "[done] personal profile complete"
