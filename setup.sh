@@ -282,6 +282,8 @@ main() {
       run_wsl_profile "$DOTFILES_DIR"
       ;;
   esac
+
+  report_stow_failures
 }
 
 main

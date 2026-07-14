@@ -134,7 +134,9 @@ Available options:
 | `--nvim-version <version>` | Neovim tarball version for Debian/Ubuntu |
 
 The installer is designed to be rerunnable. Stow refuses packages with tracked
-repository changes and preserves adopted untracked files for review.
+repository changes and preserves adopted untracked files for review. If one
+stow package fails, setup continues with the rest and reports the stow failures
+at the end.
 
 ## Windows Subsystem for Linux
 

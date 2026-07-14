@@ -46,6 +46,9 @@ Code/.config/Code/**
 !Code/.config/Code/User/snippets/
 !Code/.config/Code/User/snippets/**
 
+# Per-machine display config — not portable across setups
+hypr/.config/hypr/monitors.conf
+
 # Claude — keep portable instructions and custom skill definitions only
 claude/.claude/**
 !claude/.claude/
