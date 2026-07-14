@@ -8,11 +8,63 @@ Ground rules, process, and behavior notes for AI-assisted development in this re
 
 *(Document your own repo structure here.)*
 
+### Milestone Versioning
+
+Milestones use semantic versioning in the `planning/vX.Y/` directory structure:
+
+- **Major versions** (v1.0, v2.0, v3.0): Significant feature releases or breaking changes
+- **Minor versions** (v1.1, v1.2, v1.3): Incremental improvements, bug fixes, or small features
+- **Patch versions** (v1.0.1, v1.0.2): Hotfixes and critical bug fixes (when needed)
+
+**Examples:**
+- `v1.0/` — Initial release with core functionality
+- `v1.1/` — First minor update with improvements
+- `v2.0/` — Major release with new features or breaking changes
+
+When starting a new milestone, create a directory named after the version (e.g., `planning/v1.0/`) and update `planning/README.md` to reference it as the active milestone.
+
+### Key Files
+
+- **`docs/DESIGN-PHILOSOPHY.md`**: Read before any code work. Governs all design decisions.
+- **`planning/v1.0/IMPLEMENTATION.md`**: Authoritative execution punchlist. Keep checkboxes/worklog in sync with code changes.
+- **`status/STATUS-*.md`**: Canonical location for release-line development statistics reports.
+- **`implement/RELEASE-CLOSE.md`**: Release-close preflight checklist.
+
 ---
 
 ## First Principles
 
 **Read `docs/DESIGN-PHILOSOPHY.md` before starting any code work.** It is the governing document for all design decisions.
+
+---
+
+## Milestone Naming Convention
+
+Milestones use semantic versioning to indicate scope and impact:
+
+- **Major milestones** (whole numbers): `v1.0`, `v2.0`, `v3.0` — Significant features, architectural changes, or breaking changes
+- **Minor milestones** (decimal increments): `v1.1`, `v1.2`, `v2.1` — Smaller features, improvements, or bug fix batches
+- **Patch milestones** (optional): `v1.0.1`, `v1.0.2` — Critical fixes, security patches
+
+### Planning Directory Structure
+
+```
+planning/
+├── v1.0/          # Active milestone (major)
+│   ├── PLAN.md
+│   └── IMPLEMENTATION.md
+├── v1.1/          # Previous or future milestone (minor)
+│   ├── PLAN.md
+│   └── IMPLEMENTATION.md
+└── ...
+```
+
+### Guidelines
+
+- Use `v1.0` for the first major release or significant feature set
+- Increment the minor version (`.1`, `.2`, etc.) for related improvements within a major milestone
+- Always reference the active milestone directory in planning docs (e.g., `planning/v1.0/IMPLEMENTATION.md`)
+- When starting a new major milestone, create a new directory (e.g., `v2.0/`) and update `planning/README.md` to point to it
 
 ---
 
@@ -33,7 +85,7 @@ Every non-trivial feature follows this cycle:
 
 Not all work starts from a sprint punchlist. Interactive sessions still follow the same principles, scaled to the change:
 
-1. **Track the work.** Before implementing, add a brief entry to the active milestone plan and implementation docs (e.g., `planning/vN/PLAN.md` and `planning/vN/IMPLEMENTATION.md`; create the active file(s) if missing). Exception: for work explicitly unscoped to any milestone/release, log it in `planning/WORKLOG.md`.
+1. **Track the work.** Before implementing, add a brief entry to the active milestone plan and implementation docs (e.g., `planning/v1.0/PLAN.md` and `planning/v1.0/IMPLEMENTATION.md`; create the active file(s) if missing). Exception: for work explicitly unscoped to any milestone/release, log it in `planning/WORKLOG.md`.
 2. **Write tests first.** Ad-hoc does not mean untested.
 3. **Validate before committing.** Run the targeted tests and static checks for the repo you are changing.
 
@@ -72,11 +124,11 @@ We use separate lanes for development work:
 ### Before Picking Up Work
 
 - Check git status/log for recent changes
-- Review existing docs and tests for context (start with the latest `planning/vN/IMPLEMENTATION.md` punchlist)
+- Review existing docs and tests for context (start with the latest `planning/v1.0/IMPLEMENTATION.md` punchlist)
 - Review `planning/REFACTOR.md` and identify only truly opportunistic candidates (same-file touch as planned milestone work); record selected RF IDs (or explicit `none`) in the milestone pre-analysis
 - Re-read `docs/DESIGN-PHILOSOPHY.md` and explicitly note any product/behavioral-contract implications in the milestone pre-analysis
 - Complete a milestone pre-analysis before a coder starts the punchlist (threat hotspots, runtime wiring checkpoints, validation scope, and likely deferrals)
-- Record pre-analysis notes in the active `planning/vN/IMPLEMENTATION.md` before implementation begins
+- Record pre-analysis notes in the active `planning/v1.0/IMPLEMENTATION.md` before implementation begins
 
 ### During Execution
 
@@ -145,8 +197,8 @@ type: short summary (imperative mood)
 
 ## Docs, Metrics, and Claim Integrity
 
-- Treat `planning/vN/IMPLEMENTATION.md` as the authoritative execution punchlist; keep checkboxes/worklog in sync with code changes.
-- Require a pre-analysis entry in `planning/vN/IMPLEMENTATION.md` at milestone start.
+- Treat `planning/v1.0/IMPLEMENTATION.md` as the authoritative execution punchlist; keep checkboxes/worklog in sync with code changes.
+- Require a pre-analysis entry in `planning/v1.0/IMPLEMENTATION.md` at milestone start.
 - Fix doc-to-code drift immediately (especially around security guarantees and runtime enforcement semantics).
 - During release-close, if dependency resolutions or workflow/action trust anchors change, include the relevant supply-chain audit doc in the same docs-parity pass.
 - When writing release stats or quoting numbers (tests, churn, LOC), scope calculations to a specific tag/commit and include the commands used.
@@ -185,7 +237,7 @@ Truth-in-claims:
 
 ### Deferrals
 
-- Unresolved items stay in the active milestone's `DEFERRALS` list in `planning/vN/IMPLEMENTATION.md` (add the section if missing).
+- Unresolved items stay in the active milestone's `DEFERRALS` list in `planning/v1.0/IMPLEMENTATION.md` (add the section if missing).
 - Each deferral must include: **ID**, **rationale**, **risk**, and **target milestone**.
 - Use `planning/PLAN-FUTURE.md` only for items beyond the final milestone of the current release scope.
 - No orphan deferrals: a deferred item must be linked to an executable destination before milestone/release closure.
