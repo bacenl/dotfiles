@@ -35,7 +35,7 @@ Notes:
 - [x] Require and verify Neovim 0.11.2 or newer for LazyVim across all profiles.
 - [x] Add regression tests for summary content, Pi installation, and Neovim version handling.
 - [x] Run the complete regression suite, Bash syntax checks, diff checks, and independent review.
-- [ ] Commit, push, and open a follow-up pull request.
+- [x] Commit and push the changes; follow-up pull request: [#2](https://github.com/bacenl/dotfiles/pull/2).
 
 Validation:
 - All five `tests/*.sh` scripts pass.
