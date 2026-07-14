@@ -19,8 +19,8 @@
     "npm:pi-peon-ping"
   ],
   "defaultProvider": "local",
-  "defaultModel": "local",
-  "defaultThinkingLevel": "medium",
+  "defaultModel": "Ornith-1.0-35B",
+  "defaultThinkingLevel": "high",
   "defaultProjectTrust": "ask",
   "enableInstallTelemetry": false,
   "enableAnalytics": false,
