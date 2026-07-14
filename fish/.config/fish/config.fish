@@ -16,13 +16,14 @@ end
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-if test -f /home/bacen/miniforge3/bin/conda
-    eval /home/bacen/miniforge3/bin/conda "shell.fish" hook $argv | source
+set -l miniforge_dir "$HOME/miniforge3"
+if test -f "$miniforge_dir/bin/conda"
+    eval "$miniforge_dir/bin/conda" "shell.fish" hook $argv | source
 else
-    if test -f "/home/bacen/miniforge3/etc/fish/conf.d/conda.fish"
-        . "/home/bacen/miniforge3/etc/fish/conf.d/conda.fish"
+    if test -f "$miniforge_dir/etc/fish/conf.d/conda.fish"
+        . "$miniforge_dir/etc/fish/conf.d/conda.fish"
     else
-        set -x PATH /home/bacen/miniforge3/bin $PATH
+        fish_add_path "$miniforge_dir/bin"
     end
 end
 # <<< conda initialize <<<
@@ -32,5 +33,5 @@ set -gx UV_EXCLUDE_NEWER (date -u -d '7 days ago' +%Y-%m-%dT00:00:00Z 2>/dev/nul
 
 # peon-ping quick controls
 function peon
-    bash /home/bacen/.claude/hooks/peon-ping/peon.sh $argv
+    bash "$HOME/.claude/hooks/peon-ping/peon.sh" $argv
 end
