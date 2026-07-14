@@ -2,6 +2,8 @@
 set -euo pipefail
 
 STOW_FAILURES=()
+_STOW_REMOVED_LINKS=()
+_STOW_REMOVED_DESTS=()
 
 record_stow_failure() {
   local pkg="$1"
@@ -26,13 +28,18 @@ report_stow_failures() {
 }
 
 # remove_absolute_target_symlink_conflicts <pkg> <dotfiles_dir>
-# GNU Stow refuses to adopt absolute target symlinks. If one blocks a path this
-# package owns, remove only the symlink so Stow can create the managed link.
+# GNU Stow refuses to adopt absolute target symlinks. If one blocks a leaf path
+# this package owns, remove only that symlink so Stow can create the managed
+# link. Parent-directory symlinks are never removed: they may represent an
+# entire external configuration tree.
 remove_absolute_target_symlink_conflicts() {
   local pkg="$1"
   local dotfiles_dir="$2"
   local pkg_path="$dotfiles_dir/$pkg"
   local rel target link_dest
+
+  _STOW_REMOVED_LINKS=()
+  _STOW_REMOVED_DESTS=()
 
   while IFS= read -r rel; do
     rel="${rel#./}"
@@ -57,7 +64,47 @@ remove_absolute_target_symlink_conflicts() {
       record_stow_failure "$pkg" "could not remove absolute target symlink $target"
       return 1
     fi
-  done < <(cd "$pkg_path" && find . -mindepth 1 -print)
+    _STOW_REMOVED_LINKS+=("$target")
+    _STOW_REMOVED_DESTS+=("$link_dest")
+  done < <(cd "$pkg_path" && find . -mindepth 1 \( -type f -o -type l \) -print)
+}
+
+# restore_removed_target_symlinks
+# Rolls back leaf symlinks removed before a failed Stow operation. It removes
+# only symlinks created during the partial operation and never overwrites a real
+# file or directory.
+restore_removed_target_symlinks() {
+  local i=0 target link_dest current_dest status=0
+
+  while [ "$i" -lt "${#_STOW_REMOVED_LINKS[@]}" ]; do
+    target="${_STOW_REMOVED_LINKS[$i]}"
+    link_dest="${_STOW_REMOVED_DESTS[$i]}"
+
+    if [ -L "$target" ]; then
+      current_dest=$(readlink "$target")
+      if [ "$current_dest" = "$link_dest" ]; then
+        i=$((i + 1))
+        continue
+      fi
+      if ! rm "$target"; then
+        status=1
+        i=$((i + 1))
+        continue
+      fi
+    elif [ -e "$target" ]; then
+      echo "[error] cannot restore absolute symlink because a real path now exists: $target" >&2
+      status=1
+      i=$((i + 1))
+      continue
+    fi
+
+    if ! ln -s "$link_dest" "$target"; then
+      status=1
+    fi
+    i=$((i + 1))
+  done
+
+  return "$status"
 }
 
 # do_stow <pkg> <dotfiles_dir>
@@ -83,15 +130,31 @@ do_stow() {
     return 0
   fi
 
-  remove_absolute_target_symlink_conflicts "$pkg" "$dotfiles_dir" || return 0
+  if ! remove_absolute_target_symlink_conflicts "$pkg" "$dotfiles_dir"; then
+    if ! restore_removed_target_symlinks; then
+      record_stow_failure "$pkg" "removed target symlinks could not be restored"
+    fi
+    return 0
+  fi
 
   # Adopt existing files into the package, then restore tracked dotfiles so the
   # home directory points at the repository's versions without deleting data.
   if ! stow --dir="$dotfiles_dir" --target="$HOME" --adopt --restow "$pkg"; then
+    # Stow may adopt some files before failing. Roll back both the tracked
+    # checkout contents and any absolute HOME symlinks removed before Stow.
     record_stow_failure "$pkg" "stow command failed"
+    if ! git -C "$dotfiles_dir" restore --worktree -- "$pkg"; then
+      record_stow_failure "$pkg" "tracked files could not be restored after failed stow"
+    fi
+    if ! restore_removed_target_symlinks; then
+      record_stow_failure "$pkg" "removed target symlinks could not be restored after failed stow"
+    fi
     return 0
   fi
-  git -C "$dotfiles_dir" restore --worktree -- "$pkg"
+  if ! git -C "$dotfiles_dir" restore --worktree -- "$pkg"; then
+    record_stow_failure "$pkg" "tracked files could not be restored after stow"
+    return 0
+  fi
 
   local adopted
   adopted=$(git -C "$dotfiles_dir" ls-files --others --exclude-standard -- "$pkg")

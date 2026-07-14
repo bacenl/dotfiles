@@ -12,3 +12,18 @@ Notes:
 - Work is isolated in a Git worktree so existing edits in `~/dotfiles` remain untouched.
 - `bash tests/setup_profiles_test.sh` and Bash syntax validation pass.
 - Independent review identified WSL/HOME guard bypasses; kernel-backed detection and canonical HOME validation were added before re-review.
+
+## 2026-07-14 - Synchronize WSL profile with current master
+
+- [x] Merge the current `origin/master` into `feat/wsl-profile` and resolve conflicts.
+- [x] Add regression coverage for merged stow failure handling and WSL profile behavior.
+- [x] Run the complete shell/profile validation suite until all checks pass.
+- [ ] Commit and push the synchronized branch.
+
+Notes:
+- `origin/master` merged cleanly; `INSTALL.md`, `README.md`, and `setup.sh` were auto-merged without conflict markers.
+- A regression test reproduced a partial-adoption failure that left a tracked dotfile modified when GNU Stow exited unsuccessfully.
+- Independent review also reproduced unsafe removal of an absolute parent-directory symlink and loss of an absolute leaf symlink after Stow failure.
+- `do_stow` now considers only package leaf paths, never removes parent-directory symlinks, restores removed leaf symlinks on failure, and restores tracked package contents on both successful and failed Stow runs.
+- Stow failures remain aggregated and later packages continue running; real GNU Stow tests cover conflict adoption, managed-link creation, and idempotent reruns.
+- `bash -n setup.sh scripts/install/*.sh scripts/profile/*.sh scripts/stow.sh tests/*.sh` and every `tests/*.sh` script pass.
