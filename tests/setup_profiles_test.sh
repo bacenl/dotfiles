@@ -60,6 +60,9 @@ reset_mocks
 # shellcheck source=../scripts/profile/wsl.sh
 source "$ROOT/scripts/profile/wsl.sh"
 run_wsl_profile "$ROOT" >/dev/null
+for pkg in nvim tmux fzf ripgrep bat zoxide eza fish node npm python go gcc gh yazi; do
+  assert_contains "$CALLS" "install:$pkg"
+done
 for pkg in nvim tmux fish scripts claude pi npm; do
   assert_contains "$CALLS" "stow:$pkg"
 done

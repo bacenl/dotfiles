@@ -43,3 +43,12 @@ Validation:
 - `git diff --check` passes.
 - Final independent review found no blocking security or correctness issues.
 - ShellCheck was unavailable on the review host.
+
+## 2026-07-15 - WSL profile dependencies
+
+- [x] Install every required core Fish command in the WSL profile, including `eza` for the overridden `ls` function.
+- [x] Add regression coverage and document the WSL terminal command set.
+
+Validation:
+- Added `eza` to the WSL package list; the existing package resolver installs it from the native package manager.
+- `bash -n setup.sh scripts/install/*.sh scripts/profile/*.sh scripts/stow.sh tests/*.sh`, every `tests/*.sh`, and `git diff --check` pass.

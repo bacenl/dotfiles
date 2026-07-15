@@ -154,8 +154,10 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/s
   -- --profile wsl
 ```
 
-The WSL profile installs Neovim, tmux, Fish, CLI development tools, and Pi. It
-uses `pi-personal/.pi/agent/settings.json`, including the personal package set,
+The WSL profile installs Neovim, tmux, Fish, and its core terminal commands:
+eza (the Fish `ls` replacement), fzf, ripgrep, bat, zoxide, Node, Python, Go,
+GitHub CLI, Yazi where available, and Pi. It uses
+`pi-personal/.pi/agent/settings.json`, including the personal package set,
 while omitting the personal Linux desktop and daily-capture setup.
 
 GNU Stow targets the WSL Linux home. Keep the checkout at `~/dotfiles`; do not

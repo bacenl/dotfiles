@@ -72,9 +72,11 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/bacenl/dotfiles/master/s
   -- --profile wsl
 ```
 
-The profile installs the portable terminal stack, stows Linux configuration
-into the WSL user's `$HOME`, and selects the personal Pi settings profile. It
-does not install Kitty, Hyprland, Omarchy, or other Linux desktop components.
+The profile installs the portable terminal stack—including Fish, eza, fzf,
+ripgrep, bat, zoxide, Neovim, tmux, Node, Python, Go, GitHub CLI, Yazi where
+available, and Pi—stows Linux configuration into the WSL user's `$HOME`, and
+selects the personal Pi settings profile. It does not install Kitty, Hyprland,
+Omarchy, or other Linux desktop components.
 
 Keep both `~/dotfiles` and `$HOME` in WSL's Linux filesystem. Windows-hosted
 projects can remain on NTFS and be opened from paths such as

@@ -22,7 +22,10 @@ run_wsl_profile() {
 
   install_nvim
 
-  local pkgs=(tmux fzf ripgrep bat zoxide fish node npm python go gcc gh)
+  # These commands back the Fish configuration stowed below. In particular,
+  # Fish overrides ls with eza, so eza must be installed before the config is
+  # linked into a fresh WSL home.
+  local pkgs=(tmux fzf ripgrep bat zoxide eza fish node npm python go gcc gh)
   for pkg in "${pkgs[@]}"; do
     install_pkg "$pkg"
   done
